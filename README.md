@@ -26,5 +26,5 @@ This also provides an advantage for testing, when you can check directly if Tabl
 
 TODO
 ----
--I so far only have the Select, Where, and OrderBy commands, but the rest have been planned out and were anticipated in the designing of the structure for the existing ones.
+-I so far only have the Select, Where, and OrderBy commands, but the rest have been planned out and were anticipated in the designing of the structure for the existing ones. <br>
 -I will be adding comparisons of the use of this library compared to sql syntax, shortly, upon adding some more query commands.
