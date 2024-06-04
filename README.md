@@ -1,3 +1,7 @@
+A C# library for an in memory database, with the tables being stored and retrieved from self created and managed files.
+<br>
+<br>
+
 This project was done with Avromi Schneierson ([link](https://github.com/avrohom-schneierson)), with whom the planning and designing of the entire project was done together, and we then took separate parts (him: DataSource (ie the storing and retrieving of the database). me: the structure of the tables when in memory, and the query functions), and we linked them with an Adapter.
 
 Regarding overall design:
