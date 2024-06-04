@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace in_memory_db
+namespace InMemoryDb
 {    
     public class RowsWrapper
     {

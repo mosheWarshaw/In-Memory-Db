@@ -1,8 +1,8 @@
-﻿using in_memory_db;
+﻿using InMemoryDb;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
-namespace in_memory_db_tests
+namespace InMemoryDbTests
 {
     [TestClass]
     public class OrderByTests

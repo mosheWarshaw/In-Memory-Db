@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace in_memory_db.DataSource.DB
+namespace InMemoryDb.DataSource.DB
 {
     // todo make this a DTO?
     public interface ITable

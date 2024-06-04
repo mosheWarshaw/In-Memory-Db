@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿
+/*The reason for the if statements in each ethod that chekc if it is of a type and then transfers it
+ * into a different variable is because i can't do
+ * Dictionary<string, Column<?>> columns = new();
+ */
 
-//the reason for the if statements in ehac ethod that chekc if it is of a type and then trnasfer sit into a diffent aribale is because i cant do Dictionary<string, Column<?>> columns = new Dictionary<string, Column<?>>();
-
-namespace in_memory_db
+namespace InMemoryDb
 {
     public class Column<T> : IColumn
     {
@@ -25,11 +25,11 @@ namespace in_memory_db
             _startingCells[rowIndex] = val;
         }
 
-        public void AddCell<Q>(Q val)
+        public void AddCell<V>(V val)
         {
-            if (val is T t)
+            if (val is T tVal)
             {
-                _newCells.Add(t);
+                _newCells.Add(tVal);
             }
             else
             {
@@ -40,7 +40,7 @@ namespace in_memory_db
 
 
 
-        public Q GetCell<Q>(int index)
+        public V GetCell<V>(int index)
         {
             T t;
             if (index < _startingCells.Length)
@@ -51,9 +51,9 @@ namespace in_memory_db
             {
                 t = _newCells.ElementAt(index);
             }
-            if (t is Q q)
+            if (t is V v)
             {
-                return q;
+                return v;
             }
             throw new Exception("Generic type of method was different from the column's type.");
         }
@@ -70,15 +70,15 @@ namespace in_memory_db
 
 
 
-        public void SetCell<Q>(int index, Q val)
+        public void SetCell<V>(int index, V val)
         {
-            if (val is T t)
+            if (val is T tVal)
             {
                 if (index < _startingCells.Length)
                 {
-                    _startingCells[index] = t;
+                    _startingCells[index] = tVal;
                 }
-                _newCells[index] = t;
+                _newCells[index] = tVal;
             }
             else
             {
@@ -116,7 +116,7 @@ namespace in_memory_db
 
         public Q GetTempCell<Q>()
         {
-            if (tempCellVal is Q q) //should awas be true. this si jsut the way i have to cast it. this si so tha user in SameRowAccesor can use this method on an IColumn, menaing there doesnt have to ab casting to Column.
+            if (tempCellVal is Q q)
             {
                 return q;
             }

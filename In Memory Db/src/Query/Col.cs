@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace in_memory_db
+namespace InMemoryDb
 {
     //<Source, Result> aka datatype of the sourceColumn, and datatype of the resultColumn (aka the datatype of what TheAction "returns" (aka the type of box it stores the value in)).
     public class Col<S, R> : ICol

@@ -1,4 +1,4 @@
-﻿namespace in_memory_db_tests
+﻿namespace InMemoryDbTests
 {
     //So typos of names are compile time errors, not runtime errors or bugs.
     public class Names

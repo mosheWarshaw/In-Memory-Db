@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 
-namespace in_memory_db
+namespace InMemoryDb
 {
     public class SameRowAccessor
     {

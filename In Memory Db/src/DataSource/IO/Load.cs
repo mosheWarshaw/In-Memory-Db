@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using in_memory_db.DataSource.DB;
+using InMemoryDb.DataSource.DB;
 
-namespace in_memory_db.DataSource.IO
+namespace InMemoryDb.DataSource.IO
 {
     /// <summary>
     /// Provides static functions to load a saved database into memory.

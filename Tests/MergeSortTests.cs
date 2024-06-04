@@ -1,9 +1,9 @@
-﻿using in_memory_db;
+﻿using InMemoryDb;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
 //todo add corner cases, and have more extensive testing.
-namespace in_memory_db_tests
+namespace InMemoryDbTests
 {
     [TestClass]
     public class MergeSortTests

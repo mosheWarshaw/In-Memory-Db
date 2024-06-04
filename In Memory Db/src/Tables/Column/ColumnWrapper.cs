@@ -1,4 +1,4 @@
-﻿namespace in_memory_db
+﻿namespace InMemoryDb
 {
     public class ColumnWrapper<T> : IColumnWrapper
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace in_memory_db
+namespace InMemoryDb
 {
     public partial class Funcs
     {

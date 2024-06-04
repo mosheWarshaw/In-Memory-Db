@@ -1,10 +1,10 @@
-﻿using in_memory_db;
+﻿using InMemoryDb;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
 //OrderBy is used in all these select tests. It is used in detemringing Rows equality.
 
-namespace in_memory_db_tests
+namespace InMemoryDbTests
 {
     [TestClass]
     public class SelectAndWhereTests

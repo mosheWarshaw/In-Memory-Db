@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace in_memory_db
+namespace InMemoryDb
 {
     public class Database
     {
@@ -27,7 +27,7 @@ namespace in_memory_db
             {
                 throw new ArgumentException();
             }
-            _tables[tableName] = table;  // todo this isn't using the passed-in table?
+            _tables[tableName] = table;
         }
 
         public bool Drop(string tableName)
@@ -55,7 +55,7 @@ namespace in_memory_db
             return _tables.Remove(oldTableName);
         }
 
-        //Temporary. For DatabaseAdapter only.
+        //todo Temporary. For DatabaseAdapter only.
         public IEnumerable<KeyValuePair<string, Table>> GetTables()
         {
             List<KeyValuePair<string, Table>> tables = new();

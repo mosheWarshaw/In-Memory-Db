@@ -1,11 +1,11 @@
-﻿using in_memory_db.DataSource.DB;
+﻿using InMemoryDb.DataSource.DB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace in_memory_db.DataSourceAdapters
+namespace InMemoryDb.DataSourceAdapters
 {
     public class DatabaseAdapter : IDatabase<ITable>
     {

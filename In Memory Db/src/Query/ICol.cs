@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static in_memory_db.Table;
+using static InMemoryDb.Table;
 
-namespace in_memory_db
+namespace InMemoryDb
 {
     public interface ICol
     {

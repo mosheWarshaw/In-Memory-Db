@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace in_memory_db.DataSource.IO
+namespace InMemoryDb.DataSource.IO
 {
     /// <summary>
     /// This class provides fields with the various characters used to separate the different parts of the database when stored in the file.

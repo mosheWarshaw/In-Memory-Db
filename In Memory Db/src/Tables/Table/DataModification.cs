@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static in_memory_db.Funcs;
+using static InMemoryDb.Funcs;
 
-namespace in_memory_db
+namespace InMemoryDb
 {
     public partial class Table
     {

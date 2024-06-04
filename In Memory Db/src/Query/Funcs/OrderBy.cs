@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 //todo Debug using RowsWrapper.Print
-namespace in_memory_db
+namespace InMemoryDb
 {
     public partial class Funcs
     {
