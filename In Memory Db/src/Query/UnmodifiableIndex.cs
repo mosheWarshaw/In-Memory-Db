@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace in_memory_db
 {
-    public class UnmodifiableVal<T>
+    /*public class UnmodifiableVal<T>
     {
         private readonly ModifiableVal<T> _modifiableVal;
         public UnmodifiableVal(ModifiableVal<T> modifiableVal)
@@ -20,5 +20,5 @@ namespace in_memory_db
                 return _modifiableVal.Val;
             }
         }
-    }
+    }*/
 }

@@ -1,0 +1,4 @@
+TABLE_NAME[table1]&COLUMN_NAMES[col1_col2]&COLUMN_TYPES[System.String_System.Int32]
+a_1_
+b_2_
++NULL
