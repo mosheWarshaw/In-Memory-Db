@@ -13,9 +13,6 @@ namespace InMemoryDb
         //if there is no "on" arg, then you do cartiesian product.
         public Funcs Join(JoinType joinType, string leftTable, string rightTable, string on = null, Func<SameRowAccessor, SameRowAccessor, bool> where = null, string nameOfResultTable = null)
         {
-            
-
-
 
             _EndOfFunc(nameOfResultTable);
             return this;
