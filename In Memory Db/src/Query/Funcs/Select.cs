@@ -1,10 +1,6 @@
-﻿using System;
-using InMemoryDb.src.Query.Col;
-
-
-/*todo either get rid of Rows or Table, but you don't need both. Rows is just a map of columns, and an Equals method.
+﻿/*todo either get rid of Rows or Table, but you don't need both. Rows is just a map of columns, and an Equals method.
  * Table has a lot of thefuncitality, but for some it just passes it off to Rows which just passes it off to Column,
- * and there's no clear distinciton for when in Funcs to use Table ro Rows, and it really could go either way, so get
+ * and there's no clear distinction for when in Funcs to use Table ro Rows, and it really could go either way, so get
  * rid of one or th ether.
     the wya it shoud be, which it is jsut with an extra class, is that Column abracts the primitve datatype, and Rows/Table
     abstracts the work needed to do on a column, such as deeting a row (and keepign track of all th edelted rows), or renaming
@@ -14,8 +10,6 @@ namespace InMemoryDb
 {
     public partial class Funcs
     {
-        //todo look at end of where params.
-
         /// <summary>
         /// 
         /// </summary>
@@ -26,14 +20,9 @@ namespace InMemoryDb
         /// what you want for the inner selct statmetn of what would normally be acocrelate dusbquery in sql
         /// , and then chain a selec stament onto that which uses the data of the orignal tbale and the result from
         /// the preious query.
-        /// 
-        /// in order to do this, each Col should eb allowed to speicify a diffenrt tbale that
-        /// it wants to get its source column from - ther should be no reason that they should all be based on the
-        /// same table - nad you should also allow it to use a table from a preivous (in the chain) query.
         /// </param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        public Funcs Select(string tableName, ICol[] cols, Func<SameRowAccessor, bool> where = null, string nameOfResultTable = null)
+        /// <param name="amountToTake">If set, the function will take the first n amount of rows that pass the where function, where n = amountToTake.</param>
+        public Funcs Select(string tableName, ICol[] cols, Func<SameRowAccessor, bool> where = null, string nameOfResultTable = null, int? amountToTake = null)
         {
             _ScreenSelectArgs(tableName, cols);
             _currResultRows = new Rows();
@@ -42,6 +31,8 @@ namespace InMemoryDb
             {
                 where = row => true;
             }
+
+            int numOfAddedRows = 0;
 
             SameRowAccessor sameRowAccessor = new SameRowAccessor(_currResultRows);
 
@@ -55,8 +46,9 @@ namespace InMemoryDb
                 _resultTable.Add(col.ResultColumnName, column);
             }
 
+            bool amountTaken = false;
             int numOfRows = sourceTable.GetNumOfRows();
-            for (int i = 0; i < numOfRows; i++)
+            for (int i = 0; i < numOfRows && !amountTaken; i++)
             {
                 foreach (ICol col in cols)
                 {
@@ -67,6 +59,15 @@ namespace InMemoryDb
                     foreach (ICol col in cols)
                     {
                         col.PermanentlyAdd();
+                    }
+
+                    if(amountToTake != null)
+                    {
+                        numOfAddedRows++;
+                        if (numOfAddedRows == amountToTake)
+                        {
+                            amountTaken = true;
+                        }
                     }
                 }
             }

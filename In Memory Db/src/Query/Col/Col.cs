@@ -1,42 +1,94 @@
-﻿using System;
-using System.Data.Common;
-
-namespace InMemoryDb.src.Query.Col
+﻿namespace InMemoryDb
 {
-    //<Source, Result> aka datatype of the sourceColumn, and datatype of the resultColumn (aka the datatype of what TheAction "returns" (aka the type of box it stores the value in)).
+    //<Source, Result> aka datatype of the sourceColumn, and datatype of the column that will be returned.
     public class Col<S, R> : ICol
     {
-        public string SourceColumnName { get; }
-        public string ResultColumnName { get; }
-        private readonly Func<S, SameRowAccessor, R> _theFunc;
-        private Func<SameRowAccessor, R> _sourcelessFunc;
-
         public Column<R> column = new Column<R>();
 
         private ColumnWrapper<S> _sourceColumnWrapper;
         private SameRowAccessor _sameRowAccessor;
 
 
-        /*Note, the builder pattern is not right for here because I want the user to create a Col under one of these conditions,
-         * and tehre should eb a comiler error if they don't (rather than a runtime error when checking if a valid build
-         * can be made, from within the build() method of a would-be builder).*/
-        public Col(string sourceColumnName, string resultColumnName = null)
-        {
-            SourceColumnName = sourceColumnName;
-            ResultColumnName = resultColumnName ?? sourceColumnName;
-        }
 
-        public Col(string sourceColumnName, string customColumnName, Func<S, SameRowAccessor, R> func) : this(sourceColumnName, customColumnName)
-        {
-            _theFunc = func;
-        }
+        #region construction
+        public string SourceColumnName { get; }
+        public string ResultColumnName { get; }
+        private Func<S, SameRowAccessor, R> _sourceFunc { get; }
+        private Func<SameRowAccessor, R> _sourcelessFunc { get; }
 
-        public Col(string customColumnName, Func<SameRowAccessor, R> sourcelessFunc)
+        private Col(string sourceColName, string resultColumnName, Func<S, SameRowAccessor, R> sourceFunc, Func<SameRowAccessor, R> sourcelessFunc)
         {
-            SourceColumnName = null;
-            ResultColumnName = customColumnName;
+            SourceColumnName = sourceColName;
+            ResultColumnName = resultColumnName ?? sourceColName;
+            _sourceFunc = sourceFunc;
             _sourcelessFunc = sourcelessFunc;
         }
+
+        /// <summary>
+        /// If there's not a source column, then there needs to be a sourceless func.
+        /// Having a sourcefunc and a sourceless func would not make sense, and therefore would yild a thrown exception.
+        /// </summary>
+        public class Builder
+        {
+            private string _sourceColumnName;
+            private string _resultColumnName;
+            private Func<S, SameRowAccessor, R> _sourceFunc;
+            private Func<SameRowAccessor, R> _sourcelessFunc;
+
+            #region setters
+            public Builder SourceColumnName(string name)
+            {
+                _sourceColumnName = name;
+                return this;
+            }
+
+            public Builder ResultColumnName(string name)
+            {
+                _resultColumnName = name;
+                return this;
+            }
+
+            /// <summary>
+            /// Function to use on each cell of this column, in the case where the column
+            /// is based off the cells of an existing table.
+            /// </summary>
+            public Builder SourceFunc(Func<S, SameRowAccessor, R> func)
+            {
+                _sourceFunc = func;
+                return this;
+            }
+
+            /// <summary>
+            /// Function to use on each cell of this column, in the case where the column
+            /// is not based off the cells of an existing table.
+            /// </summary>
+            public Builder SourcelessFunc(Func<SameRowAccessor, R> func)
+            {
+                _sourcelessFunc = func;
+                return this;
+            }
+            #endregion
+
+            public Col<S, R> Build()
+            {
+                if (VerifyFoundation())
+                    return new Col<S, R>(_sourceColumnName, _resultColumnName, _sourceFunc, _sourcelessFunc);
+                throw new ImproperFoundationException();
+            }
+
+            //Ensure the user has called the right builder methods.
+            private bool VerifyFoundation()
+            {
+                return
+                    (_sourceFunc == null || _sourcelessFunc == null)
+                    &&
+                    (_sourceColumnName == null ^ _sourcelessFunc == null);
+            }
+        }
+        #endregion
+
+
+
 
         public IColumn GetColumn()
         {
@@ -44,6 +96,9 @@ namespace InMemoryDb.src.Query.Col
         }
 
 
+
+
+        #region setters
         public void SetSameRowAccessor(SameRowAccessor sameRowAccessor)
         {
             _sameRowAccessor = sameRowAccessor;
@@ -53,15 +108,19 @@ namespace InMemoryDb.src.Query.Col
         {
             _sourceColumnWrapper = (ColumnWrapper<S>)iColumnWrapper;
         }
+        #endregion
 
+
+
+        #region add
         public void TemporarilyAdd(int index)
         {
             if (SourceColumnName != null)
             {
                 S s = _sourceColumnWrapper.GetCell(index);
-                if (_theFunc != null)
+                if (_sourceFunc != null)
                 {
-                    column.SetTempVal(_theFunc(s, _sameRowAccessor));
+                    column.SetTempVal(_sourceFunc(s, _sameRowAccessor));
                 }
                 else
                 {
@@ -81,5 +140,6 @@ namespace InMemoryDb.src.Query.Col
         {
             column.AddTempVal();
         }
+        #endregion
     }
 }

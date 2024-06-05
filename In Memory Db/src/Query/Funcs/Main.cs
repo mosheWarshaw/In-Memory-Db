@@ -35,6 +35,17 @@ namespace InMemoryDb
             _resultTable = null;
         }
 
+        /// <summary>
+        /// For when there is only one cell in the results,
+        /// and having a new RowsWrapper returned would be wasteful, such
+        /// as when running many Select queries in Column.SetAddresses.
+        /// </summary>
+        public T GetScalarValue<T>()
+        {
+            string columnName = _currResultRows.columns.First().Key;
+            return _currResultRows.columns[columnName].GetCell<T>(0);
+        }
+
         public RowsWrapper GetResult()
         {
             return new RowsWrapper(_lastResult);

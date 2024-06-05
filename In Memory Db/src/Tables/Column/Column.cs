@@ -4,6 +4,8 @@
  * Dictionary<string, Column<?>> columns = new();
  */
 
+using System.Security;
+
 namespace InMemoryDb
 {
     public class Column<T> : IColumn
@@ -12,6 +14,53 @@ namespace InMemoryDb
         private List<T> _newCells;
         private T _tempVal;
 
+
+
+
+        private bool isFk;
+        private string referencedTableName;
+        private string referencedPkName;
+        private int[] _startingCellsAddresses;
+        private List<int> _newCellsAddresses;
+        public int GetAddress(int indexOfFk)
+        {
+            if (indexOfFk < _startingCellsAddresses.Length)
+            {
+                return _startingCellsAddresses[indexOfFk];
+            }
+            return _newCellsAddresses.ElementAt(indexOfFk);
+        }
+        /*todo All the tables should be read from their files into 
+         * memory, but the columns holding fks (ie Foreign KeyS)
+         * should be left empty. When all the tables have been read in, then
+         * fill in the fk columns one table at a time. Reason: tables could have
+         * circular key references. So that is when this function should be called
+         * for fk columns.*/
+        public void SetAddresses(Database db)
+        {
+            T fk = default(T);
+            Func<SameRowAccessor, bool> pkMatchesFk = row => row.GetCell<T>(referencedPkName).Equals(fk);
+            T pk;
+            Funcs funcs = new Funcs(db);
+            for (int i = 0; i < GetSize(); i++)
+            {
+                fk = GetCell<T>(i);
+                pk = funcs.Select
+                    (
+                        referencedTableName,
+                        new ICol[]
+                        {
+                            new Col<T, T>.Builder().SourceColumnName(referencedPkName).Build() 
+                        },
+                        where : pkMatchesFk,
+                        amountToTake : 1 //There will only be 1, but this prevents the query from wasting time in looking for another match.
+                    ).
+                    GetScalarValue<T>();
+            }
+        }
+
+
+
         public Column(int startingSize = 0)
         {
             _startingCells = new T[startingSize];
@@ -19,7 +68,7 @@ namespace InMemoryDb
         }
 
 
-
+        #region add cell
         public void AddInitialCell(int rowIndex, T val)
         {
             _startingCells[rowIndex] = val;
@@ -36,10 +85,10 @@ namespace InMemoryDb
                 throw new Exception("Generic type of method was different from the column's type.");
             }
         }
+        #endregion
 
 
-
-
+        #region get cell
         public V GetCell<V>(int index)
         {
             T t;
@@ -66,7 +115,7 @@ namespace InMemoryDb
             }
             val = _newCells.ElementAt(rowIndex);
         }
-
+        #endregion
 
 
 
@@ -86,6 +135,8 @@ namespace InMemoryDb
             }
         }
 
+
+        #region temp val
         public void SetTempVal(T val)
         {
             _tempVal = val;
@@ -102,7 +153,7 @@ namespace InMemoryDb
         {
             _newCells.Add(_tempVal);
         }
-
+        #endregion
 
         /// <summary>
         /// This is not the only mechanism to be used when the user wants to delete a row.
@@ -194,7 +245,7 @@ namespace InMemoryDb
         }
 
 
-
+        //For adapter only.
         public Type GetColumnType()
         {
             return typeof(T); 
