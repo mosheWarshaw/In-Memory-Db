@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace InMemoryDb
+﻿namespace InMemoryDb
 {
     public class SameRowAccessor
     {
@@ -12,7 +10,7 @@ namespace InMemoryDb
 
         public T GetCell<T>(string otherColumnsName)
         {
-            return _rows.columns[otherColumnsName].GetTempCell<T>();
+            return _rows.columns[otherColumnsName].GetTempVal<T>();
         }
     }
 }

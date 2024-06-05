@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace InMemoryDb
+﻿namespace InMemoryDb
 {
     public class Rows
     {

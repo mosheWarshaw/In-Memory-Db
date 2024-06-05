@@ -4,14 +4,19 @@ namespace InMemoryDb
 {
     public interface IColumn
     {
-        int GetSize();
         T GetCell<T>(int index);
+        void GetCell(int rowIndex, out dynamic val);
         void AddCell<T>(T val);
         void SetCell<T>(int index, T val);
+
+        T GetTempVal<T>();
+        void AddTempVal();
+
+        int GetSize();
         IColumnWrapper GetColumnWrapper();
-        T GetTempCell<T>();
         void Swap(int index1, int index2);
-        void GetCell(int rowIndex, out dynamic val);
+
+        //For adapter.
         Type GetColumnType();
     }
 }

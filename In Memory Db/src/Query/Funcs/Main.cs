@@ -24,6 +24,16 @@ namespace InMemoryDb
             _lastResult = rows;
         }
 
+        public void _EndOfFunc(string nameOfResultTable)
+        {
+            if (nameOfResultTable != null)
+            {
+                _results[nameOfResultTable] = _currResultRows;
+            }
+            _lastResult = _currResultRows;
+            _currResultRows = null;
+            _resultTable = null;
+        }
 
         public RowsWrapper GetResult()
         {

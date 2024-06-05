@@ -24,13 +24,7 @@ namespace InMemoryDb
             _OrderBy(columnNames, 0, 0, _resultTable.GetNumOfRows());
 
 
-            if (nameOfResultTable != null)
-            {
-                _results[nameOfResultTable] = _currResultRows;
-            }
-            _lastResult = _currResultRows;
-            _currResultRows = null;
-            _resultTable = null;
+            _EndOfFunc(nameOfResultTable);
             return this;
         }
 

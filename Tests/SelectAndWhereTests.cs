@@ -1,4 +1,5 @@
 ﻿using InMemoryDb;
+using InMemoryDb.src.Query.Col;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 

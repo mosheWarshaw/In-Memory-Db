@@ -10,7 +10,7 @@ namespace InMemoryDb
     {
         private T[] _startingCells;
         private List<T> _newCells;
-        public T tempCellVal;
+        private T _tempVal;
 
         public Column(int startingSize = 0)
         {
@@ -86,8 +86,61 @@ namespace InMemoryDb
             }
         }
 
+        public void SetTempVal(T val)
+        {
+            _tempVal = val;
+        }
+
+        public V GetTempVal<V>()
+        {
+            if (_tempVal is V v)
+                return v;
+            throw new Exception("Generic is wrong type.");
+        }
+
+        public void AddTempVal()
+        {
+            _newCells.Add(_tempVal);
+        }
 
 
+        /// <summary>
+        /// This is not the only mechanism to be used when the user wants to delete a row.
+        /// In that case, Rows should contain a set of removed elements so that it knows what rows not to write back into
+        /// storaage when closing down the db and what rows to not allow retrieval of.
+        /// todo because of the last part of what i said above, Col should not get a column it can caccess, rather it should
+        /// get a wpper of ome sort that allows itto only access the column it should be allowed to,
+        /// and becuase there could be missing indexes the uer should get an iterator to go through the rows f the result they
+        /// are returned rathe than passing in indexes. each call to the iteratoer should return a
+        /// rows wraper that has the index of which row to use (reuse teh obejct and jsut an UnmodifiableVal), and the enumerator shoud
+        /// be like
+        /// public IEnumerable<ARowsWrapper> Enumerator()
+        /// {
+        ///     while(index < size)
+        ///     {
+        ///     
+        ///         if(removedRows.Contains(index))
+        ///             index++;
+        ///         else
+        ///         {
+        ///             modifiableVal.Val = index;
+        ///             yeild return aRowsWrapper;
+        ///         }
+        /// }
+        /// 
+        /// note, when a user inserts a row, check the set of removed rows to see if there is a gap of a row that can be filled up.
+        /// </summary>
+        public void Remove(int index)
+        {
+            if (index < _startingCells.Length)
+            {
+                _startingCells[index] = default(T);
+            }
+            else
+            {
+                _newCells.RemoveAt(index);
+            }
+        }
 
 
         public int GetSize()
@@ -111,23 +164,6 @@ namespace InMemoryDb
             SetCell(index1, cell2);
             SetCell(index2, cell1);
         }
-
-
-
-        public Q GetTempCell<Q>()
-        {
-            if (tempCellVal is Q q)
-            {
-                return q;
-            }
-            throw new Exception("Generic type of method was different from the column's type.");
-        }
-
-        public void AddTempCellPermanently()
-        {
-            AddCell(tempCellVal);
-        }
-
 
 
         public IColumnWrapper GetColumnWrapper()

@@ -11,10 +11,13 @@ namespace InMemoryDb
     {
         string SourceColumnName { get; }
         string ResultColumnName { get; }
+
         void SetSourceColumnWrapper(IColumnWrapper columnWrapper);
+        void SetSameRowAccessor(SameRowAccessor sameRowAccessor);
+
         void TemporarilyAdd(int index);
         void PermanentlyAdd();
+
         IColumn GetColumn();
-        void SetSameRowAccessor(SameRowAccessor sameRowAccessor);
     }
 }
