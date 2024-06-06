@@ -45,5 +45,10 @@
         {
             return _rows.columns[columnName].GetPkIndex(fkIndex);
         }
+
+        public bool Contains(string columnName)
+        {
+            return _rows.columns.ContainsKey(columnName);
+        }
     }
 }

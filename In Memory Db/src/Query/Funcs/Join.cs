@@ -8,107 +8,85 @@
         //fkTable is left, and pktable is right. noe this for choosing th JoinType
         public Funcs JoinOnKeys(string fkTableName, ICol[] fkCols, string onFk, string pkTableName, ICol[] pkCols, string onPk, Func<SameRowAccessor, bool> where = null, JoinType joinType = JoinType.INNER, string nameOfResultTable = null)
         {
-            //if(on != null) screenColName(on);
-            //if(resultTableName != null) screen table name is untaken in db and _resultRows
-            //if(joinType == JoinType.FULL || joinType == JoinType.LEFT) screen table(s) that column type is nullable 
-            //_ScreenSelectArgs(leftTableName, leftTableCols);
-            //_ScreenSelectArgs(rightTableName, rightTableCols);
-            _currResultRows = new Rows();
-            _resultTable = new Table(_currResultRows);
-            if (where == null)
-            {
-                where = row => true;
-            }
+            #region set up
+            //if(joinType is outer) screen table(s) ensuring column type is nullable.
+            _ScreenCols(fkCols, pkCols);
+            _ScreenExistingColumnNames(_database, [fkTableName, onFk], [pkTableName, onPk]);
+            _ScreenExistingTableNames(fkTableName, pkTableName);
+            if (nameOfResultTable != null)
+                _ScreenNewTableNames(nameOfResultTable);
+            _SetUpFunc(ref where);
 
             SameRowAccessor sameRowAccessor = new SameRowAccessor(_currResultRows);
-
-            Table fkTable = _database.Contains(fkTableName) ? _database.Get(fkTableName) : new Table(_results[fkTableName]);
-            Table pkTable = _database.Contains(pkTableName) ? _database.Get(pkTableName) : new Table(_results[pkTableName]);
-
-
-            Table sourceTable = fkTable;
-            ICol[] cols = fkCols;
-            for (int i = 0; i < 2; i++)
-            {
-                foreach (ICol col in cols)
-                {
-                    col.SetSourceColumnWrapper(sourceTable.GetColumnWrapper(col.SourceColumnName));
-                    col.SetSameRowAccessor(sameRowAccessor);
-                    IColumn column = col.GetColumn();
-                    _resultTable.Add(col.ResultColumnName, column);
-                }
-                sourceTable = pkTable;
-                cols = pkCols;
-            }
-
+            ColsSetUp(fkTableName, out Table fkTable, fkCols, sameRowAccessor);
+            ColsSetUp(pkTableName, out Table pkTable, pkCols, sameRowAccessor);
 
             HashSet<int> indexesOfAddedRight = new();
+            int? pkIndex;
+            #endregion
 
-            /* regarding outer joins for doing oins with keys:
-             *    the fkTable row is taken care of in teh
-             *   iterations (it is added whether it passes or fails the where()), and the pkTable's rows
-             *   are always added to teh set so they can be done later (whether the pkTable is the left
-             *   tbale in a left join, or it's a full join).
-             * regarding outer joins for doing joins via carteisain product:
-             *   the left table is always take care of (added if it passes or fails the where),
-             *   and the right is always added to teh set to be done later (this is the case when the join type is
-             *   FULL).
-             */
-
-
-            int? pkIndexNullable;
-            int pkIndex;
 
             for (int i = 0; i < fkTable.GetNumOfRows(); i++)
             {
                 foreach (ICol col in fkCols)
                     col.TemporarilyAdd(i);
-                pkIndexNullable = fkTable.GetPkIndex(i, onFk);
-                if (pkIndexNullable != null)
+                pkIndex = fkTable.GetPkIndex(i, onFk);
+                if (pkIndex != null)
                 {
-                    pkIndex = pkIndexNullable.Value;
-                    foreach (ICol col in fkCols)
-                        col.TemporarilyAdd(i);
-                    foreach (ICol col in pkCols)
-                        col.TemporarilyAdd(pkIndex);
+                    _TemporarilyAdd(fkCols, i);
+                    _TemporarilyAdd(pkCols, pkIndex.Value);
                     if (where(sameRowAccessor))
                     {
-                        foreach (ICol col in fkCols)
-                            col.PermanentlyAdd();
-                        foreach (ICol col in pkCols)
-                            col.PermanentlyAdd();
-
+                        _PermanentlyAdd(fkCols, pkCols);
+                        
                         if (joinType == JoinType.FULL || joinType == JoinType.RIGHT)
-                        {
-                            indexesOfAddedRight.Add(pkIndex);
-                        }
+                            indexesOfAddedRight.Add(pkIndex.Value);
                     }
                     else if (joinType == JoinType.LEFT)
-                    {
-                        foreach (ICol col in fkCols)
-                            col.PermanentlyAdd();
-                        foreach (ICol col in pkCols)
-                            col.AddNull();
-                    }
+                        _JoinLeft(fkCols, pkCols);
                 }
-                else
-                {
-                    if (joinType == JoinType.LEFT)
-                    {
-                        foreach (ICol col in fkCols)
-                            col.PermanentlyAdd();
-                        foreach (ICol col in pkCols)
-                        {
-                            col.AddNull();
-                        }
-                    }
-                }
+                else if (joinType == JoinType.LEFT)
+                    _JoinLeft(fkCols, pkCols);
             }
 
 
             _EndOfFunc(nameOfResultTable);
             return this;
         }
+
+
+
+
+
+
+
+        private void _TemporarilyAdd(ICol[] cols, int i)
+        {
+            foreach (ICol col in cols)
+                col.TemporarilyAdd(i);
+        }
+
+        private void _PermanentlyAdd(params ICol[][] cols)
+        {
+            foreach (ICol[] colArr in cols)
+            {
+                foreach (ICol col in colArr)
+                    col.PermanentlyAdd();
+            }
+        }
+
+        private void _JoinLeft(ICol[] leftCols, ICol[] rightCols)
+        {
+            foreach (ICol col in leftCols)
+                col.PermanentlyAdd();
+            foreach (ICol col in rightCols)
+                col.AddNull();
+        }
+
+
+
+
+
 
         //does cartesian product.
         public Funcs JoinWhere(/*...*/)
