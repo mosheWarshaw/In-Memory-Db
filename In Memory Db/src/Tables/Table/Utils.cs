@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace InMemoryDb
+﻿namespace InMemoryDb
 {
     public partial class Table
     {
@@ -35,6 +29,21 @@ namespace InMemoryDb
         public IEnumerable<string> GetColumnNames()
         {
             return _rows.columns.Keys;
+        }
+
+        public bool IsFk(string columnName)
+        {
+            return _rows.columns[columnName].IsFk();
+        }
+
+        public int GetIndexOfNth<T>(string columnName, T val, int n)
+        {
+            return _rows.columns[columnName].GetIndexOfNth(val, n);
+        }
+
+        public int? GetPkIndex(int fkIndex, string columnName)
+        {
+            return _rows.columns[columnName].GetPkIndex(fkIndex);
         }
     }
 }

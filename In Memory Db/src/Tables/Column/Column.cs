@@ -1,8 +1,11 @@
 ﻿
-/*The reason for the if statements in each ethod that chekc if it is of a type and then transfers it
+/*The reason for the if statements in each method that check if it is of a type and then transfers it
  * into a different variable is because i can't do
  * Dictionary<string, Column<?>> columns = new();
  */
+
+//todo use the observer design pattern for updating foriegn keys when a pk is changed.
+
 
 using System.Security;
 
@@ -15,20 +18,22 @@ namespace InMemoryDb
         private T _tempVal;
 
 
-
-
-        private bool isFk;
-        private string referencedTableName;
-        private string referencedPkName;
-        private int[] _startingCellsAddresses;
-        private List<int> _newCellsAddresses;
+        private bool _isFk;
+        private string _referencedTableName;
+        private string _referencedPkName;
+        private int[] _startingCellsIndexes;
+        private List<int> _newCellsIndexes;
+        public bool IsFk()
+        {
+            return _isFk;
+        }
         public int GetAddress(int indexOfFk)
         {
-            if (indexOfFk < _startingCellsAddresses.Length)
+            if (indexOfFk < _startingCellsIndexes.Length)
             {
-                return _startingCellsAddresses[indexOfFk];
+                return _startingCellsIndexes[indexOfFk];
             }
-            return _newCellsAddresses.ElementAt(indexOfFk);
+            return _newCellsIndexes.ElementAt(indexOfFk);
         }
         /*todo All the tables should be read from their files into 
          * memory, but the columns holding fks (ie Foreign KeyS)
@@ -36,28 +41,67 @@ namespace InMemoryDb
          * fill in the fk columns one table at a time. Reason: tables could have
          * circular key references. So that is when this function should be called
          * for fk columns.*/
-        public void SetAddresses(Database db)
+        public void SetIndexes(Database db)
         {
-            T fk = default(T);
-            Func<SameRowAccessor, bool> pkMatchesFk = row => row.GetCell<T>(referencedPkName).Equals(fk);
-            T pk;
-            Funcs funcs = new Funcs(db);
+            int address;
+            T val;
             for (int i = 0; i < GetSize(); i++)
             {
-                fk = GetCell<T>(i);
-                pk = funcs.Select
-                    (
-                        referencedTableName,
-                        new ICol[]
-                        {
-                            new Col<T, T>.Builder().SourceColumnName(referencedPkName).Build() 
-                        },
-                        where : pkMatchesFk,
-                        amountToTake : 1 //There will only be 1, but this prevents the query from wasting time in looking for another match.
-                    ).
-                    GetScalarValue<T>();
+                val = GetCell<T>(i);
+                address = db.Get(_referencedTableName).GetIndexOfNth(_referencedPkName, val, 1);
+                SetIndex(i, address);
             }
         }
+
+        public void SetIndex(int indexToPutItIn, int address)
+        {
+
+            if (indexToPutItIn < _startingCells.Length)
+            {
+                _startingCellsIndexes[indexToPutItIn] = address;
+            }
+            else
+            {
+                /*Because doing
+                 *      List<int> list = new List<int>(5);
+                 *      list[0] = 1234567890;
+                 * gives you an erro for using the brackets
+                 * without an elem having already been placed there first.
+                 * Normally you wouldn't notice this because you use the list's
+                 * Add method.*/
+                while (indexToPutItIn >= _newCellsIndexes.Count)
+                {
+                    _newCellsIndexes.Add(0);
+                }
+                _newCellsIndexes[indexToPutItIn] = address;
+            }
+        }
+
+        public int? GetPkIndex(int fkIndex)
+        {
+            if (!_isFk)
+                throw new Exception("This column is not an fk column.");
+            if (fkIndex < _startingCellsIndexes.Length)
+                return _startingCellsIndexes[fkIndex];
+            return _newCellsIndexes.ElementAt(fkIndex);
+        }
+
+
+        public int GetIndexOfNth<U>(U val, int n)
+        {
+            int counter = 0;
+            for(int i = 0; i < GetSize(); i++)
+            {
+                if (val.Equals(GetCell<T>(i)))
+                {
+                    counter++;
+                    if(counter == n)
+                        return i;
+                }
+            }
+            return -1;
+        }
+
 
 
 
@@ -65,6 +109,18 @@ namespace InMemoryDb
         {
             _startingCells = new T[startingSize];
             _newCells = new List<T>();
+        }
+
+        /// <summary>
+        /// If column is a fk column.
+        /// </summary>
+        public Column(string referencedTableName, string referencedPkName, int startingSize = 0) : this(startingSize)
+        {
+            _isFk = true;
+            _referencedTableName = referencedTableName;
+            _referencedPkName = referencedPkName;
+            _startingCellsIndexes = new int[startingSize];
+            _newCellsIndexes = new();
         }
 
 
@@ -100,6 +156,7 @@ namespace InMemoryDb
             {
                 t = _newCells.ElementAt(index);
             }
+            //todo createa version of methods like this one that take V as a parmaeter and transfer teh input or t inthis case to another variable, taht doesnt do this - for cases where you knwo it is being called within the same column and the types are he same.
             if (t is V v)
             {
                 return v;

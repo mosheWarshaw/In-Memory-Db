@@ -42,8 +42,8 @@ namespace InMemoryDb
         /// </summary>
         public T GetScalarValue<T>()
         {
-            string columnName = _currResultRows.columns.First().Key;
-            return _currResultRows.columns[columnName].GetCell<T>(0);
+            string columnName = _lastResult.columns.First().Key;
+            return _lastResult.columns[columnName].GetCell<T>(0);
         }
 
         public RowsWrapper GetResult()

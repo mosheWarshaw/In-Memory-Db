@@ -27,6 +27,11 @@ namespace InMemoryDb
             _rows.columns[columnName] = new Column<T>(startingSize);
         }
 
+        public void CreateFkColumn<T>(string columnName, string referencedTableName, string referencedColumnName, int startingSize = 0)
+        {
+            _rows.columns[columnName] = new Column<T>(referencedTableName, referencedColumnName, startingSize);
+        }
+
         public void Add(string columnName, IColumn column)
         {
             if (_rows.Contains(columnName))
@@ -35,6 +40,15 @@ namespace InMemoryDb
             }
 
             _rows.columns[columnName] = column;
+        }
+
+
+        public void SetAddresses(Database db)
+        {
+            foreach (IColumn column in _rows.columns.Values)
+            {
+                column.SetIndexes(db);
+            }
         }
     }
 }

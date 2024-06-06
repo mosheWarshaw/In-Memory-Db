@@ -1,20 +1,18 @@
 ﻿namespace InMemoryDb
 {
-
-    //todo in middle
-
     public partial class Funcs
     {
-        public enum JoinType { INNER, LEFT, FULL };
-        //<leftRow, rightRow, _> where
-        //if there is no "on" arg, then you do cartiesian product. on is for when joining based on keys, but for joins such as      join table1 and table2 on table1.col > tabl2.col + 200       you would use teh where Func to tell me if i should include the row.
+        //left join differs from an inner join in that leftTable's rows are added wih null values for rightTables columns, when the whee function returns false.
+        public enum JoinType { INNER, LEFT, RIGHT, FULL };
         //result tbale name can never be null.
-        public Funcs Join(string leftTableName, ICol[] leftTableCols, string rightTableName, ICol[] rightTableCols, string on = null, Func<SameRowAccessor, bool> where = null, JoinType joinType = JoinType.INNER, string nameOfResultTable = null)
+        //fkTable is left, and pktable is right. noe this for choosing th JoinType
+        public Funcs JoinOnKeys(string fkTableName, ICol[] fkCols, string onFk, string pkTableName, ICol[] pkCols, string onPk, Func<SameRowAccessor, bool> where = null, JoinType joinType = JoinType.INNER, string nameOfResultTable = null)
         {
             //if(on != null) screenColName(on);
             //if(resultTableName != null) screen table name is untaken in db and _resultRows
-            _ScreenSelectArgs(leftTableName, leftTableCols);
-            _ScreenSelectArgs(rightTableName, rightTableCols);
+            //if(joinType == JoinType.FULL || joinType == JoinType.LEFT) screen table(s) that column type is nullable 
+            //_ScreenSelectArgs(leftTableName, leftTableCols);
+            //_ScreenSelectArgs(rightTableName, rightTableCols);
             _currResultRows = new Rows();
             _resultTable = new Table(_currResultRows);
             if (where == null)
@@ -24,14 +22,14 @@
 
             SameRowAccessor sameRowAccessor = new SameRowAccessor(_currResultRows);
 
-            Table leftSourceTable = _database.Contains(leftTableName) ? _database.Get(leftTableName) : new Table(_results[leftTableName]);
-            Table rightSourceTable = _database.Contains(rightTableName) ? _database.Get(rightTableName) : new Table(_results[rightTableName]);
+            Table fkTable = _database.Contains(fkTableName) ? _database.Get(fkTableName) : new Table(_results[fkTableName]);
+            Table pkTable = _database.Contains(pkTableName) ? _database.Get(pkTableName) : new Table(_results[pkTableName]);
 
-            Table sourceTable = leftSourceTable;
 
-            foreach (ICol[] cols in (new ICol[][] { leftTableCols, rightTableCols}) ) {
-
-                //todo when  you finish, you should see if you can remove the duplication with the select function.
+            Table sourceTable = fkTable;
+            ICol[] cols = fkCols;
+            for (int i = 0; i < 2; i++)
+            {
                 foreach (ICol col in cols)
                 {
                     col.SetSourceColumnWrapper(sourceTable.GetColumnWrapper(col.SourceColumnName));
@@ -39,26 +37,83 @@
                     IColumn column = col.GetColumn();
                     _resultTable.Add(col.ResultColumnName, column);
                 }
-
-                sourceTable = rightSourceTable;
-
+                sourceTable = pkTable;
+                cols = pkCols;
             }
 
 
+            HashSet<int> indexesOfAddedRight = new();
 
-            if (on != null)
+            /* regarding outer joins for doing oins with keys:
+             *    the fkTable row is taken care of in teh
+             *   iterations (it is added whether it passes or fails the where()), and the pkTable's rows
+             *   are always added to teh set so they can be done later (whether the pkTable is the left
+             *   tbale in a left join, or it's a full join).
+             * regarding outer joins for doing joins via carteisain product:
+             *   the left table is always take care of (added if it passes or fails the where),
+             *   and the right is always added to teh set to be done later (this is the case when the join type is
+             *   FULL).
+             */
+
+
+            int? pkIndexNullable;
+            int pkIndex;
+
+            for (int i = 0; i < fkTable.GetNumOfRows(); i++)
             {
-                /*Table fkTable = ;
-                Table pkTable = ;
-                for(int i = 0; i < )*/
-            }
-            else
-            {
-                
+                foreach (ICol col in fkCols)
+                    col.TemporarilyAdd(i);
+                pkIndexNullable = fkTable.GetPkIndex(i, onFk);
+                if (pkIndexNullable != null)
+                {
+                    pkIndex = pkIndexNullable.Value;
+                    foreach (ICol col in fkCols)
+                        col.TemporarilyAdd(i);
+                    foreach (ICol col in pkCols)
+                        col.TemporarilyAdd(pkIndex);
+                    if (where(sameRowAccessor))
+                    {
+                        foreach (ICol col in fkCols)
+                            col.PermanentlyAdd();
+                        foreach (ICol col in pkCols)
+                            col.PermanentlyAdd();
+
+                        if (joinType == JoinType.FULL || joinType == JoinType.RIGHT)
+                        {
+                            indexesOfAddedRight.Add(pkIndex);
+                        }
+                    }
+                    else if (joinType == JoinType.LEFT)
+                    {
+                        foreach (ICol col in fkCols)
+                            col.PermanentlyAdd();
+                        foreach (ICol col in pkCols)
+                            col.AddNull();
+                    }
+                }
+                else
+                {
+                    if (joinType == JoinType.LEFT)
+                    {
+                        foreach (ICol col in fkCols)
+                            col.PermanentlyAdd();
+                        foreach (ICol col in pkCols)
+                        {
+                            col.AddNull();
+                        }
+                    }
+                }
             }
 
 
             _EndOfFunc(nameOfResultTable);
+            return this;
+        }
+
+        //does cartesian product.
+        public Funcs JoinWhere(/*...*/)
+        {
+            //look at paper.
             return this;
         }
     }

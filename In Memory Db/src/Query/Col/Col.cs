@@ -88,6 +88,14 @@
         #endregion
 
 
+        //This is the way it has to be done because Join can't call defualt becuase it doesn't have the R generic type, and it can't just add a null literal because this will throw a compiler error because it doesn't know that the generic type is a Nullable.
+        /// <summary>
+        /// This will only work if the type is nullable, else the deault type will be something else.
+        /// </summary>
+        public void AddNull()
+        {
+            column.AddCell(default(R));
+        }
 
 
         public IColumn GetColumn()
@@ -95,6 +103,11 @@
             return column;
         }
 
+
+        public int? GetPkIndex(int fkIndex)
+        {
+            return column.GetPkIndex(fkIndex);
+        }
 
 
 

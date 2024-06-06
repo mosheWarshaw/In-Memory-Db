@@ -15,9 +15,13 @@ namespace InMemoryDb
         void SetSourceColumnWrapper(IColumnWrapper columnWrapper);
         void SetSameRowAccessor(SameRowAccessor sameRowAccessor);
 
+        int? GetPkIndex(int fkIndex);
+
         void TemporarilyAdd(int index);
         void PermanentlyAdd();
 
         IColumn GetColumn();
+
+        void AddNull();
     }
 }
