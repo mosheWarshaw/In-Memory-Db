@@ -156,12 +156,22 @@ namespace InMemoryDb
             {
                 t = _newCells.ElementAt(index);
             }
-            //todo createa version of methods like this one that take V as a parmaeter and transfer teh input or t inthis case to another variable, taht doesnt do this - for cases where you knwo it is being called within the same column and the types are he same.
             if (t is V v)
             {
                 return v;
             }
             throw new Exception("Generic type of method was different from the column's type.");
+        }
+
+        //todo use this one within Column.
+        //For when you aren't working with an IColumn, and you dont need the if statement to make sure the right type was used. I use a diffenrent method name to ensure that GtCell<V> is never used when ou mean to sue this one, and it oculd happne without you relaizing it becuse thetype of GetCell<V> could be inferrered and you wont get a compiler error for leaving out the <V>.
+        public T GetCellT(int index)
+        {
+            if (index < _startingCells.Length)
+            {
+                return _startingCells.ElementAt(index);
+            }
+            return _newCells.ElementAt(index);
         }
 
         public void GetCell(int rowIndex, out dynamic val)

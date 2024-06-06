@@ -40,13 +40,20 @@ namespace InMemoryDb
             if (columnStart < columnNames.Length)
             {
                 dynamic prevCell;
+                dynamic currCell;
+
+                //Setting the values for the first iteration.
                 _resultTable.GetCell(rowStart, columnName, out prevCell);
-                dynamic currCell = prevCell;
-                int start;
+                if (rowStart + 1 < rowEnd)
+                    _resultTable.GetCell(rowStart + 1, columnName, out currCell);
+                else
+                    currCell = $"foo{prevCell}"; //Setting it to be something different from prevCell. No matter the data type, it can be converted to a string, and once then it can be have an appended character(s) to be different.
+
+                int start = rowStart;
                 int end;
-                for (int rowIndex = rowStart; rowIndex < rowEnd;)
+                //Because the first prevCell.Equals(currCell) is just testing the first cell against itself, rowIndex should be set to check the next cell upon enter the loop for teh first time.
+                for (int rowIndex = rowStart + 1; rowIndex < rowEnd;)
                 {
-                    start = rowIndex;
                     for (; prevCell.Equals(currCell) && rowIndex < rowEnd; rowIndex++)
                     {
                         prevCell = currCell;
