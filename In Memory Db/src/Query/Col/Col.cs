@@ -154,5 +154,11 @@
             column.AddTempVal();
         }
         #endregion
+
+
+        public Type GetResultType()
+        {
+            return typeof(R);
+        }
     }
 }

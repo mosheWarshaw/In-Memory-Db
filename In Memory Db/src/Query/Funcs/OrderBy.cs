@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-//todo Debug using RowsWrapper.Print
+
 namespace InMemoryDb
 {
     public partial class Funcs
     {
-        /*You work recursively rightards. If you're given 3 columns to eb ordered by,
-         * then you sort the leftmost column of the 3, and wherever there
+        /*You work recursively rightwards. If you're given 3 columns to be ordered by,
+         * then you sort the leftmost column of the 3, and whereever there
          * is a section of rows of this column that are ties (ie are all the same)
          * then you sort this section based on the cells of the column to its right
          * (ie the next column in the paramter's array), and if there are sections of ties
@@ -47,14 +47,14 @@ namespace InMemoryDb
                 if (rowStart + 1 < rowEnd)
                     _resultTable.GetCell(rowStart + 1, columnName, out currCell);
                 else
-                    currCell = $"foo{prevCell}"; //Setting it to be something different from prevCell. No matter the data type, it can be converted to a string, and once then it can be have an appended character(s) to be different.
+                    currCell = $"foo{prevCell}"; //Setting it to be something different from prevCell. No matter the data type, it can be converted to a string, and once so it can be have an appended character(s) to be different.
 
                 int start = rowStart;
                 int end;
                 //Because the first prevCell.Equals(currCell) is just testing the first cell against itself, rowIndex should be set to check the next cell upon enter the loop for teh first time.
                 for (int rowIndex = rowStart + 1; rowIndex < rowEnd;)
                 {
-                    for (; prevCell.Equals(currCell) && rowIndex < rowEnd; rowIndex++)
+                    for (; CellsAreEqual(prevCell, currCell) && rowIndex < rowEnd; rowIndex++)
                     {
                         prevCell = currCell;
                         _resultTable.GetCell(rowIndex, columnName, out currCell);
@@ -70,6 +70,13 @@ namespace InMemoryDb
                     prevCell = currCell;
                 }
             }
+        }
+
+        public bool CellsAreEqual(dynamic o1, dynamic o2)
+        {
+            if (o1 == null || o2 == null)
+                return o1 == null && o2 == null;
+            return o1.Equals(o2);
         }
 
 
@@ -145,9 +152,20 @@ namespace InMemoryDb
             public int originalIndex;
             public dynamic elem;
 
-            public int CompareTo(ElemData other)
+            public  int CompareTo(ElemData other)
             {
+                if (elem == null || other.elem == null)
+                    return _CompareNull(elem, other.elem);
                 return elem.CompareTo(other.elem);
+            }
+
+            private int _CompareNull(dynamic elem, dynamic otherElem)
+            {
+                if (elem == null && otherElem == null)
+                    return 0;
+                else if (elem == null && otherElem != null)
+                    return -1;
+                return 1;
             }
         }
 

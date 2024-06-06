@@ -9,12 +9,13 @@
         public Funcs JoinOnKeys(string fkTableName, ICol[] fkCols, string onFk, string pkTableName, ICol[] pkCols, string onPk, Func<SameRowAccessor, bool> where = null, JoinType joinType = JoinType.INNER, string nameOfResultTable = null)
         {
             #region set up
-            //if(joinType is outer) screen table(s) ensuring column type is nullable.
             _ScreenCols(fkCols, pkCols);
             _ScreenExistingColumnNames(_database, [fkTableName, onFk], [pkTableName, onPk]);
             _ScreenExistingTableNames(fkTableName, pkTableName);
             if (nameOfResultTable != null)
                 _ScreenNewTableNames(nameOfResultTable);
+            if (joinType != JoinType.INNER)
+                _ScreenColsAreNullable(joinType, fkCols, pkCols);
             _SetUpFunc(ref where);
 
             SameRowAccessor sameRowAccessor = new SameRowAccessor(_currResultRows);
@@ -38,17 +39,29 @@
                     if (where(sameRowAccessor))
                     {
                         _PermanentlyAdd(fkCols, pkCols);
-                        
+
                         if (joinType == JoinType.FULL || joinType == JoinType.RIGHT)
                             indexesOfAddedRight.Add(pkIndex.Value);
                     }
-                    else if (joinType == JoinType.LEFT)
+                    else if (joinType == JoinType.LEFT || joinType == JoinType.FULL)
                         _JoinLeft(fkCols, pkCols);
                 }
-                else if (joinType == JoinType.LEFT)
+                else if (joinType == JoinType.LEFT || joinType == JoinType.FULL)
                     _JoinLeft(fkCols, pkCols);
             }
 
+
+            if (joinType == JoinType.FULL || joinType == JoinType.RIGHT)
+            {
+                for (int i = 0; i < pkTable.GetNumOfRows(); i++)
+                {
+                    if (!indexesOfAddedRight.Contains(i))
+                    {
+                        _Add(pkCols, i);
+                        _AddNull(fkCols);
+                    }
+                }
+            }
 
             _EndOfFunc(nameOfResultTable);
             return this;
@@ -58,7 +71,11 @@
 
 
 
-
+        private void _Add(ICol[] cols, int i)
+        {
+            _TemporarilyAdd(cols, i);
+            _PermanentlyAdd(cols);
+        }
 
         private void _TemporarilyAdd(ICol[] cols, int i)
         {
@@ -72,6 +89,14 @@
             {
                 foreach (ICol col in colArr)
                     col.PermanentlyAdd();
+            }
+        }
+
+        public void _AddNull(ICol[] cols)
+        {
+            foreach (ICol col in cols)
+            {
+                col.AddNull();
             }
         }
 
