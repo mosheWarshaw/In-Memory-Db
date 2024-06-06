@@ -4,10 +4,9 @@
  * Dictionary<string, Column<?>> columns = new();
  */
 
-//todo use the observer design pattern for updating foriegn keys when a pk is changed.
+//todo Use the observer design pattern for updating foriegn keys when a pk is changed.
 
-
-using System.Security;
+//todo Refactor file, and explain that you use default(T) when you want to use null, but can't because the compiler won't allow it even though you know T is nullable. Also explain that if(null is int?) returns false.
 
 namespace InMemoryDb
 {
@@ -21,20 +20,37 @@ namespace InMemoryDb
         private bool _isFk;
         private string _referencedTableName;
         private string _referencedPkName;
-        private int[] _startingCellsIndexes;
-        private List<int> _newCellsIndexes;
+        //todo When you add Non-null constraints on columns, switch these indexes collections to not necessarily be nullables.
+        private int?[] _startingCellsIndexes;
+        private List<int?> _newCellsIndexes;
+
+
+        public Column(int startingSize = 0)
+        {
+            _startingCells = new T[startingSize];
+            _newCells = new List<T>();
+        }
+
+        /// <summary>
+        /// If column is a fk column.
+        /// </summary>
+        public Column(string referencedTableName, string referencedPkName, int startingSize = 0) : this(startingSize)
+        {
+            _isFk = true;
+            _referencedTableName = referencedTableName;
+            _referencedPkName = referencedPkName;
+            _startingCellsIndexes = new int?[startingSize];
+            _newCellsIndexes = new();
+        }
+
+
+
         public bool IsFk()
         {
             return _isFk;
         }
-        public int GetAddress(int indexOfFk)
-        {
-            if (indexOfFk < _startingCellsIndexes.Length)
-            {
-                return _startingCellsIndexes[indexOfFk];
-            }
-            return _newCellsIndexes.ElementAt(indexOfFk);
-        }
+
+
         /*todo All the tables should be read from their files into 
          * memory, but the columns holding fks (ie Foreign KeyS)
          * should be left empty. When all the tables have been read in, then
@@ -43,36 +59,35 @@ namespace InMemoryDb
          * for fk columns.*/
         public void SetIndexes(Database db)
         {
-            int address;
-            T val;
+            int? address = null;
+            T pk;
             for (int i = 0; i < GetSize(); i++)
             {
-                val = GetCell<T>(i);
-                address = db.Get(_referencedTableName).GetIndexOfNth(_referencedPkName, val, 1);
+                pk = GetCell<T>(i);
+                if (pk != null)
+                    address = db.Get(_referencedTableName).GetIndexOfNth(_referencedPkName, pk, 1);
+                else
+                    address = null;
                 SetIndex(i, address);
             }
         }
 
-        public void SetIndex(int indexToPutItIn, int address)
+        public void SetIndex(int indexToPutItIn, int? address)
         {
 
             if (indexToPutItIn < _startingCells.Length)
-            {
                 _startingCellsIndexes[indexToPutItIn] = address;
-            }
             else
             {
                 /*Because doing
                  *      List<int> list = new List<int>(5);
                  *      list[0] = 1234567890;
-                 * gives you an erro for using the brackets
+                 * gives you an error for using the brackets
                  * without an elem having already been placed there first.
                  * Normally you wouldn't notice this because you use the list's
                  * Add method.*/
                 while (indexToPutItIn >= _newCellsIndexes.Count)
-                {
                     _newCellsIndexes.Add(0);
-                }
                 _newCellsIndexes[indexToPutItIn] = address;
             }
         }
@@ -90,38 +105,18 @@ namespace InMemoryDb
         public int GetIndexOfNth<U>(U val, int n)
         {
             int counter = 0;
-            for(int i = 0; i < GetSize(); i++)
+            for (int i = 0; i < GetSize(); i++)
             {
                 if (val.Equals(GetCell<T>(i)))
                 {
                     counter++;
-                    if(counter == n)
+                    if (counter == n)
                         return i;
                 }
             }
             return -1;
         }
 
-
-
-
-        public Column(int startingSize = 0)
-        {
-            _startingCells = new T[startingSize];
-            _newCells = new List<T>();
-        }
-
-        /// <summary>
-        /// If column is a fk column.
-        /// </summary>
-        public Column(string referencedTableName, string referencedPkName, int startingSize = 0) : this(startingSize)
-        {
-            _isFk = true;
-            _referencedTableName = referencedTableName;
-            _referencedPkName = referencedPkName;
-            _startingCellsIndexes = new int[startingSize];
-            _newCellsIndexes = new();
-        }
 
 
         #region add cell
@@ -136,10 +131,12 @@ namespace InMemoryDb
             {
                 _newCells.Add(tVal);
             }
+            //todo IsNullable doesn't work if the type is a sring, because doing Table.Create<string?> will just creataa type of string, and so the null not being of any type will fail the if statement, and will fail the Misc.IsNullable, so this typeof chekcig is eneded. todo add it o all other palces in this file.
+            else if (val == null && (Misc.IsNullable(val) || typeof(V) == typeof(string)))
+                //Because I can't add null directly, I use the default, which in the case of a Nullable it's null.
+                _newCells.Add(default(T));
             else
-            {
-                throw new Exception("Generic type of method was different from the column's type.");
-            }
+                throw new Exception("Generic type of method is different from the column's type.");
         }
         #endregion
 
@@ -149,17 +146,13 @@ namespace InMemoryDb
         {
             T t;
             if (index < _startingCells.Length)
-            {
                 t = _startingCells.ElementAt(index);
-            }
             else
-            {
                 t = _newCells.ElementAt(index);
-            }
             if (t is V v)
-            {
                 return v;
-            }
+            else if (t == null && (Misc.IsNullable(t) || typeof(V) == typeof(string)))
+                return default(V);
             throw new Exception("Generic type of method was different from the column's type.");
         }
 
@@ -168,19 +161,16 @@ namespace InMemoryDb
         public T GetCellT(int index)
         {
             if (index < _startingCells.Length)
-            {
                 return _startingCells.ElementAt(index);
-            }
             return _newCells.ElementAt(index);
         }
 
         public void GetCell(int rowIndex, out dynamic val)
         {
             if (rowIndex < _startingCells.Length)
-            {
                 val = _startingCells.ElementAt(rowIndex);
-            }
-            val = _newCells.ElementAt(rowIndex);
+            else
+                val = _newCells.ElementAt(rowIndex);
         }
         #endregion
 
@@ -191,15 +181,19 @@ namespace InMemoryDb
             if (val is T tVal)
             {
                 if (index < _startingCells.Length)
-                {
                     _startingCells[index] = tVal;
-                }
-                _newCells[index] = tVal;
+                else
+                    _newCells[index] = tVal;
+            }
+            else if (val == null && (Misc.IsNullable(val) || typeof(V) == typeof(string)))
+            {
+                if (index < _startingCells.Length)
+                    _startingCells[index] = default(T);
+                else
+                    _newCells[index] = default(T);
             }
             else
-            {
                 throw new Exception("Generic type of method was different from the column's type.");
-            }
         }
 
 
@@ -213,6 +207,8 @@ namespace InMemoryDb
         {
             if (_tempVal is V v)
                 return v;
+            else if (_tempVal == null && (Misc.IsNullable(_tempVal) || typeof(V) == typeof(string)))
+                return default(V);
             throw new Exception("Generic is wrong type.");
         }
 
@@ -251,13 +247,9 @@ namespace InMemoryDb
         public void Remove(int index)
         {
             if (index < _startingCells.Length)
-            {
                 _startingCells[index] = default(T);
-            }
             else
-            {
                 _newCells.RemoveAt(index);
-            }
         }
 
 
@@ -273,9 +265,7 @@ namespace InMemoryDb
         {
             int size = GetSize();
             if (index1 > size || index2 > size)
-            {
                 throw new ArgumentException();
-            }
 
             T cell1 = GetCell<T>(index1);
             T cell2 = GetCell<T>(index2);
@@ -292,15 +282,11 @@ namespace InMemoryDb
 
         public override bool Equals(object obj)
         {
-            if(obj is not Column<T>)
-            {
+            if (obj is not Column<T>)
                 return false;
-            }
             Column<T> otherColumn = (Column<T>)obj;
             if (GetSize() != otherColumn.GetSize() || !_startingCells.SequenceEqual(otherColumn._startingCells) || !_newCells.SequenceEqual(otherColumn._newCells))
-            {
                 return false;
-            }
             return true;
         }
 
@@ -315,7 +301,7 @@ namespace InMemoryDb
         //For adapter only.
         public Type GetColumnType()
         {
-            return typeof(T); 
+            return typeof(T);
         }
     }
 }

@@ -23,5 +23,7 @@ namespace InMemoryDb
         IColumn GetColumn();
 
         void AddNull();
+
+        Type GetResultType();
     }
 }

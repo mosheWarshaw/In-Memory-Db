@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace InMemoryDb
+﻿namespace InMemoryDb
 {
     public partial class Funcs
     {
@@ -105,6 +103,27 @@ namespace InMemoryDb
                 if (screen(tableName))
                     throw new ArgumentException();
 
+            }
+        }
+
+        private void _ScreenColsAreNullable(JoinType joinType, ICol[] leftCols, ICol[] rightCols)
+        {
+            if (joinType == JoinType.LEFT || joinType == JoinType.FULL)
+            {
+                _ScreenAreNullable(rightCols);
+            }
+            if (joinType == JoinType.RIGHT || joinType == JoinType.FULL)
+            {
+                _ScreenAreNullable(leftCols);
+            }
+        }
+
+        private void _ScreenAreNullable(ICol[] cols)
+        {
+            foreach(ICol col in cols)
+            {
+                if (!Misc.IsNullable(col.GetResultType()))
+                    throw new ArgumentException();
             }
         }
         #endregion
