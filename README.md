@@ -38,6 +38,5 @@ Where <br>
 OrderBy <br>
 JoinOnKeys <br>
 
-  Regarding JoinOnKeys
-  -------------------
+  <h3>Regarding JoinOnKeys</h3>
 
