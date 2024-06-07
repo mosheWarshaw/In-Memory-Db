@@ -5,14 +5,14 @@ This project was done with Avromi Schneierson ([github](https://github.com/avroh
 
 Regarding overall design
 ------------------------
-Arrays contain metadata, so the fewer arrays in a table then the less space db table will take up.
+Arrays contain metadata, so the fewer arrays in a table then the less space database table will take up.
 Having the db be a 2d array where each inner array is table row in the table will have a lot of arrays.
-A single array for the whole table (and if the table has 7 columns in the table, then you would get the tenth row by taking elems from 69 (7*10 in 0-index-counting) through 76 (69+7)) is not possible in db strongly typed language unless you use an Object as the type of the array, and waste space that way.
+A single array for the whole table (and if the table has 7 columns in the table, then you would get the tenth row by taking elems from 69 (7*10 in 0-index-counting) through 76 (69+7)) is not possible in a strongly typed language unless you use an Object as the type of the array, and waste space that way.
 So instead, there is a single array per column. The table is a map of column names to the column. To get the second row from the table you would take the second elem from each array.
 
 Regarding usage
 ---------------
-SQL commands are corresponded to function calls that can be chained upon each other, and in each function you pass in an object containing and managing the creation of a returned column (in the case of data-retrieval queries) in which you have the options as you normally would in a SQL query (ie (speaking of the Select because it is the one with the most features:) naming the column of the table that the values should be taken from, setting the name of the returned column to be different from the original, having a lambda alter the data of the column based off other values in the row or in any way you wish as you could from any other c# method, having the column not be based off any value of the table, and being able to assign a name to the results of the query so it can be referenced later in the chain).
+SQL commands are corresponded to function calls, and these calls can be chained together to create long compelx queries. The user, in eahc function, can give a name to the results of the function, so the results can be accessed later in the chain, as if accessing a table in the database.
 
 Current commands
 ----------------
