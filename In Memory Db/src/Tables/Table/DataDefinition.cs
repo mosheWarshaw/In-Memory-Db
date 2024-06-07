@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace InMemoryDb
+﻿namespace InMemoryDb
 {
     public partial class Table
     {

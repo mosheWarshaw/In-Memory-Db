@@ -1,4 +1,4 @@
-﻿//todo In future: Use the observer design pattern for updating foriegn keys when a pk is changed.
+﻿//todo In future: Use the Observer design pattern for updating foriegn keys when a pk is changed.
 
 /*Explanation of GetCell<V>, but note that the pattern is used
  * in other functions, so it is explained up here.
@@ -95,13 +95,6 @@ namespace InMemoryDb
             return _isFk;
         }
 
-
-        /*todo In future: All the tables should be read from their files into 
-         * memory, but the columns holding fks (ie Foreign KeyS)
-         * should be left empty. When all the tables have been read in, then
-         * fill in the fk columns one table at a time. Reason: tables could have
-         * circular key references. So that is when this function should be called
-         * for fk columns.*/
         /// <summary>
         /// Set the indexes of the rows of the pk that each elem in this column of fks referecnes.
         /// </summary>
