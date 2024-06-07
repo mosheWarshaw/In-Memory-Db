@@ -1,4 +1,17 @@
 ﻿//todo In future: Use the observer design pattern for updating foriegn keys when a pk is changed.
+
+
+
+//todo Refactor file, and explain that you use default(T) when you want to use null, but can't because the compiler won't allow it even though you know T is nullable. Also explain that if(null is int?) returns false.
+/*The reason for the if statements in each method that check if it is of a type and then transfers it
+ * into a different variable is because i can't do
+ * Dictionary<string, Column<?>> columns = new();
+                //Because I can't add null directly, I use the default, which in the case of a Nullable it's null.
+ */            // IsNullable doesn't work if the type is a sring, because doing Table.Create<string?> will just creataa type of string, and so the null not being of any type will fail the if statement, and will fail the Misc.IsNullable, so this typeof chekcig is eneded. todo add it o all other palces in this file.
+
+
+
+
 namespace InMemoryDb
 {
     public class Column<T> : IColumn
@@ -137,6 +150,9 @@ namespace InMemoryDb
             return _newCells.ElementAt(rowIndex);
         }
 
+        /// <summary>
+        /// Only (because dynamic will cause boxing) for when you have no frame of reference of what the type could be.
+        /// </summary>
         public void GetCell(int rowIndex, out dynamic val)
         {
             val = GetCellT(rowIndex);
@@ -243,9 +259,9 @@ namespace InMemoryDb
                 throw new ArgumentException();
 
             T cell1 = GetCell<T>(rowIndex1);
-            T cell2 = GetCell<T>(rowIndex1);
+            T cell2 = GetCell<T>(rowIndex2);
             SetCellT(rowIndex1, cell2);
-            SetCellT(rowIndex1, cell1);
+            SetCellT(rowIndex2, cell1);
         }
 
 

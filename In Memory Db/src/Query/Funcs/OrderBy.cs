@@ -119,12 +119,13 @@ namespace InMemoryDb
             int destinationIndex;
             int originalIndexOfBumpedRow;
             bool loop;
-            /*This and the Where extension method is needed instead of just removing the entry from the dict,
-             * because you can't alter a collection while enumerating thruouhg it.*/
             HashSet<int> removed = new HashSet<int>();
-            foreach (KeyValuePair<int, int> entry in dict.Where(e => !removed.Contains(e.Key)))
+            foreach (KeyValuePair<int, int> entry in dict)
             {
                 currIndex = entry.Key;
+                //I have to do it this way, and with a separate collection storing teh removed indexes, because you can't remove an item from a collection while iterating through it.
+                if (removed.Contains(currIndex))
+                    continue;
                 destinationIndex = entry.Value;
                 originalIndexOfBumpedRow = currIndex;
                 loop = true;
