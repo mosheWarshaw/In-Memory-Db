@@ -40,7 +40,7 @@ The ```Funcs``` class is what the querier uses. It contains all the SQL commands
 ```Col``` uses ```Column``` under the hood, so at the lowest level is the ```Column``` class abstracting the data type of the column. The interfaces ```ICol``` and ```IColumn``` are used by the other parts because they need to be working on the Col and Column regardless of the type, and as much as can be done regarding the specific cells and their types that needs to be done is on the Column level so that the higher levels don't have to use if-else statements to find the type of the Column, and that boxing doesn't need to be done (note, ```dynamic``` uses System.Object so it would cause boxing).
 
 
-=<br>
+<br>
 <br>
 ```Rows``` is a class that is primarily a holder a data, not a provider of functionality, ie the columns. Because it is used in situations where the user of it should have altering-privileges, but not in other scenarios, the members of ```Rows``` are public, and when the user should only have access-privileges then they are given ```Rows``` wrapped in ```RowsWrapper```.
 <br>
