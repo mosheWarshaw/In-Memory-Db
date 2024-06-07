@@ -35,7 +35,7 @@ all the tables are read in and then each fk column creates a list of all the cor
 
 Regarding design of specific implementation
 -------------------------------------------
-The ```Funcs``` class is what the querier uses. It contains all the SQL commands as funtions. It utilizes the functionality provided by ```Table```. ```Table``` holds ```Rows```, each ```Rows``` being a collection of ```Column```s.<br>
+The ```Funcs``` class is what the querier uses. It contains all the SQL commands as functions. It utilizes the functionality provided by ```Table```. ```Table``` holds ```Rows```, each ```Rows``` being a collection of ```Column```s.<br>
 ```Funcs``` takes a ```Col``` for each column that should be created in the returned results.<br>
 ```Col``` uses ```Column``` under the hood, so at the lowest level is the ```Column``` class abstracting the data type of the column. The interfaces ```ICol``` and ```IColumn``` are used by the other parts because they need to be working on the Col and Column regardless of the type, and as much as can be done regarding the specific cells and their types that needs to be done is on the Column level so that the higher levels don't have to use if-else statements to find the type of the Column, and that boxing doesn't need to be done (note, ```dynamic``` uses System.Object so it would cause boxing).
 
