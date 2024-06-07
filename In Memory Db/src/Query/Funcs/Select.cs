@@ -1,12 +1,4 @@
-﻿/*todo either get rid of Rows or Table, but you don't need both. Rows is just a map of columns, and an Equals method.
- * Table has a lot of thefuncitality, but for some it just passes it off to Rows which just passes it off to Column,
- * and there's no clear distinction for when in Funcs to use Table ro Rows, and it really could go either way, so get
- * rid of one or th ether.
-    the wya it shoud be, which it is jsut with an extra class, is that Column abracts the primitve datatype, and Rows/Table
-    abstracts the work needed to do on a column, such as deeting a row (and keepign track of all th edelted rows), or renaming
-    a column, ...*/
-
-namespace InMemoryDb
+﻿namespace InMemoryDb
 {
     public partial class Funcs
     {

@@ -31,7 +31,7 @@ namespace InMemoryDb
         }
 
 
-        //todo You'll need to add the cascading of the foreign keys being changed when you add that part to the db.
+        //todo In future: You'll need to add the cascading of the foreign keys being changed when you add that part to the db.
         public void Swap(int index1, int index2)
         {
             foreach (KeyValuePair<string, IColumn> entry in _rows.columns)
