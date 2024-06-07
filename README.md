@@ -21,7 +21,7 @@ Current commands
 ```OrderBy``` <br>
 ```JoinOnKeys``` <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Regarding ```Select```</b><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;It accepts an array of ```Col```s in which you can define all the thigns you would want to be able to do in a regular SQL select, such as renaming a column, and using the values of other cells in the row to determine the value, to mention a couple.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;It accepts an array of ```Col```s in which you can define all the things you would want to be able to do in a regular SQL select, such as renaming a column, and using the values of other cells in the row to determine the value, to mention a couple.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Regarding ```JoinOnKeys```</b><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JoinOnKeys refers to doing a join on rows on the foriegn key in one relating to the primary key on the other, as opposed to
 doing a cartesian product on the tables and filtering based on a condition. My implementation of this method was the reason I
