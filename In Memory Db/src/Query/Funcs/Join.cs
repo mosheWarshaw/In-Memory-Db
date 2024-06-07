@@ -2,10 +2,22 @@
 {
     public partial class Funcs
     {
-        //left join differs from an inner join in that leftTable's rows are added wih null values for rightTables columns, when the whee function returns false.
         public enum JoinType { INNER, LEFT, RIGHT, FULL };
-        //result tbale name can never be null.
-        //fkTable is left, and pktable is right. noe this for choosing th JoinType
+
+        /// <summary>
+        /// <para>
+        ///     The <c>fkTable</c> is left, and the <c>pkTable</c> is right. Note this for choosing the JoinType.
+        /// </para>
+        /// <para>
+        ///     In a left join, all values of the left table will be added,
+        ///     even if they don't have a corresponding row in the pkTable (ie fk is null)
+        ///     and even if they don't pass the where function. null values will be filled in
+        ///     for all the columns of the right table. Correspondingly for a right and full outer join.
+        /// </para>
+        /// <para>
+        ///     <c>nameOfResultTable</c> will be ignored if it is set to null.
+        /// </para>
+        /// </summary>
         public Funcs JoinOnKeys(string fkTableName, ICol[] fkCols, string onFk, string pkTableName, ICol[] pkCols, string onPk, Func<SameRowAccessor, bool> where = null, JoinType joinType = JoinType.INNER, string nameOfResultTable = null)
         {
             #region set up
@@ -44,10 +56,10 @@
                             indexesOfAddedRight.Add(pkIndex.Value);
                     }
                     else if (joinType == JoinType.LEFT || joinType == JoinType.FULL)
-                        _JoinLeft(fkCols, pkCols);
+                        _OuterJoin(fkCols, pkCols);
                 }
                 else if (joinType == JoinType.LEFT || joinType == JoinType.FULL)
-                    _JoinLeft(fkCols, pkCols);
+                    _OuterJoin(fkCols, pkCols);
             }
 
 
@@ -100,11 +112,11 @@
             }
         }
 
-        private void _JoinLeft(ICol[] leftCols, ICol[] rightCols)
+        private void _OuterJoin(ICol[] colsToAddVals, ICol[] colsToAddNull)
         {
-            foreach (ICol col in leftCols)
+            foreach (ICol col in colsToAddVals)
                 col.PermanentlyAdd();
-            foreach (ICol col in rightCols)
+            foreach (ICol col in colsToAddNull)
                 col.AddNull();
         }
 
