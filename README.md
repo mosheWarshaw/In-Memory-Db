@@ -37,6 +37,7 @@ Current commands
 ```Where``` <br>
 ```OrderBy``` <br>
 ```JoinOnKeys``` <br>
+<div style="margin: 400px">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Regarding ```JoinOnKeys```</b><br>
 JoinOnKeys refers to doing a join on rows on the foriegn key in one relating to teh primary key on the other, as opposed to
 doing a cartesian product on the tables and filtering based on a condition. My implementation of this method was the reason I
@@ -49,3 +50,4 @@ using it, I decided to do the project in it rather than in c++ or anther low lev
 instead of memoryy addresses, array/List indexes are used. They aren't used in place of foriegn keys, so there is the additional
 ```n``` space for every column whose values are foreign keys, where ```n``` is the number of rows. When a table is read into memory,
 all the tables are read in, and then each fk column creates a list of all the corresponding indexes of the pk rows.
+</div>
