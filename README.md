@@ -6,9 +6,9 @@ This project was done with Avromi Schneierson ([github](https://github.com/avroh
 Regarding overall design
 ------------------------
 Arrays contain metadata, so the fewer arrays in a table then the less space db table will take up.
-Having the db be a 2d array where each inner array is db row in the table will have db lot of arrays, so this isn't good.
-A single array for the whole table (and if the table has 7 columns in the table, then you would get the tenth row by taking elems from 69 (7*10 in 0-index-counting) through 76 (69+7)) is not possible in db strongly typed language unless you use an Object as the type of the array, but using objects takes up more space than using primitives, so this isn't good.
-So instead, there is db single array per column. The table is map of column names to the column. To get the second row from the table you would take the second elem from each array.
+Having the db be a 2d array where each inner array is table row in the table will have a lot of arrays.
+A single array for the whole table (and if the table has 7 columns in the table, then you would get the tenth row by taking elems from 69 (7*10 in 0-index-counting) through 76 (69+7)) is not possible in db strongly typed language unless you use an Object as the type of the array, and waste space that way.
+So instead, there is a single array per column. The table is a map of column names to the column. To get the second row from the table you would take the second elem from each array.
 
 Regarding usage
 ---------------
