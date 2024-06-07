@@ -130,8 +130,6 @@ namespace InMemoryDb
             throw new GenericTypeException();
         }
 
-        //todo use this one within Column.
-        //For when you aren't working with an IColumn, and you dont need the if statement to make sure the right type was used. I use a diffenrent method name to ensure that GtCell<V> is never used when ou mean to sue this one, and it oculd happne without you relaizing it becuse thetype of GetCell<V> could be inferrered and you wont get a compiler error for leaving out the <V>.
         public T GetCellT(int rowIndex)
         {
             if (rowIndex < _startingCells.Length)
@@ -246,8 +244,8 @@ namespace InMemoryDb
 
             T cell1 = GetCell<T>(rowIndex1);
             T cell2 = GetCell<T>(rowIndex1);
-            SetCell(rowIndex1, cell2);
-            SetCell(rowIndex1, cell1);
+            SetCellT(rowIndex1, cell2);
+            SetCellT(rowIndex1, cell1);
         }
 
 
