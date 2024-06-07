@@ -38,7 +38,7 @@ Current commands
 ```OrderBy``` <br>
 ```JoinOnKeys``` <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Regarding ```JoinOnKeys```</b><br>
-JoinOnKeys refers to doing a join on rows on the foriegn key in one relating to teh primary key on the other, as opposed to
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JoinOnKeys refers to doing a join on rows on the foriegn key in one relating to teh primary key on the other, as opposed to
 doing a cartesian product on the tables and filtering based on a condition. My implementation of this method was the reason I
 decided to do a database library in the first place. The idea of doing a product (ie relational algebra) in every join seemed
 wasteful if you were doing it on keys, that is rows that knew exactly which rows of the other table to be matched up with. I
