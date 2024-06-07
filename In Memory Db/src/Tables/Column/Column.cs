@@ -1,13 +1,4 @@
-﻿
-/*The reason for the if statements in each method that check if it is of a type and then transfers it
- * into a different variable is because i can't do
- * Dictionary<string, Column<?>> columns = new();
- */
-
-//todo Use the observer design pattern for updating foriegn keys when a pk is changed.
-
-//todo Refactor file, and explain that you use default(T) when you want to use null, but can't because the compiler won't allow it even though you know T is nullable. Also explain that if(null is int?) returns false.
-
+﻿//todo In future: Use the observer design pattern for updating foriegn keys when a pk is changed.
 namespace InMemoryDb
 {
     public class Column<T> : IColumn
@@ -19,7 +10,7 @@ namespace InMemoryDb
         private bool _isFk;
         private string _referencedTableName;
         private string _referencedPkName;
-        //todo When you add Non-null constraints on columns, change these indexes collections to not necessarily be nullables.
+        //todo In future: When you add Non-null constraints on columns, change these indexes collections to not necessarily be nullables.
         private int?[] _startingCellsIndexes;
         private List<int?> _newCellsIndexes;
 
@@ -52,19 +43,22 @@ namespace InMemoryDb
         }
 
 
-        /*todo All the tables should be read from their files into 
+        /*todo In future: All the tables should be read from their files into 
          * memory, but the columns holding fks (ie Foreign KeyS)
          * should be left empty. When all the tables have been read in, then
          * fill in the fk columns one table at a time. Reason: tables could have
          * circular key references. So that is when this function should be called
          * for fk columns.*/
+        /// <summary>
+        /// Set the indexes of the rows of the pk that each elem in this column of fks referecnes.
+        /// </summary>
         public void SetIndexes(Database db)
         {
             int? address = null;
             T pk;
             for (int i = 0; i < GetSize(); i++)
             {
-                pk = GetCell<T>(i);
+                pk = GetCellT(i);
                 if (pk != null)
                     address = db.Get(_referencedTableName).GetIndexOfNth(_referencedPkName, pk, 1);
                 else
@@ -105,6 +99,7 @@ namespace InMemoryDb
 
 
 
+
         #region add cell
         public void AddInitialCell(int rowIndex, T val)
         {
@@ -114,12 +109,8 @@ namespace InMemoryDb
         public void AddCell<V>(V val)
         {
             if (val is T tVal)
-            {
                 _newCells.Add(tVal);
-            }
-            //todo IsNullable doesn't work if the type is a sring, because doing Table.Create<string?> will just creataa type of string, and so the null not being of any type will fail the if statement, and will fail the Misc.IsNullable, so this typeof chekcig is eneded. todo add it o all other palces in this file.
             else if (val == null && Misc.IsNullable(val))
-                //Because I can't add null directly, I use the default, which in the case of a Nullable it's null.
                 _newCells.Add(default(T));
             else
                 throw new GenericTypeException();
@@ -127,14 +118,11 @@ namespace InMemoryDb
         #endregion
 
 
+
         #region get cell
-        public V GetCell<V>(int index)
+        public V GetCell<V>(int rowIndex)
         {
-            T t;
-            if (index < _startingCells.Length)
-                t = _startingCells.ElementAt(index);
-            else
-                t = _newCells.ElementAt(index);
+            T t = GetCellT(rowIndex);
             if (t is V v)
                 return v;
             else if (t == null && Misc.IsNullable(t))
@@ -144,43 +132,41 @@ namespace InMemoryDb
 
         //todo use this one within Column.
         //For when you aren't working with an IColumn, and you dont need the if statement to make sure the right type was used. I use a diffenrent method name to ensure that GtCell<V> is never used when ou mean to sue this one, and it oculd happne without you relaizing it becuse thetype of GetCell<V> could be inferrered and you wont get a compiler error for leaving out the <V>.
-        public T GetCellT(int index)
+        public T GetCellT(int rowIndex)
         {
-            if (index < _startingCells.Length)
-                return _startingCells.ElementAt(index);
-            return _newCells.ElementAt(index);
+            if (rowIndex < _startingCells.Length)
+                return _startingCells.ElementAt(rowIndex);
+            return _newCells.ElementAt(rowIndex);
         }
 
         public void GetCell(int rowIndex, out dynamic val)
         {
-            if (rowIndex < _startingCells.Length)
-                val = _startingCells.ElementAt(rowIndex);
-            else
-                val = _newCells.ElementAt(rowIndex);
+            val = GetCellT(rowIndex);
         }
         #endregion
 
 
 
-        public void SetCell<V>(int index, V val)
+        #region set cell
+        public void SetCell<V>(int rowIndex, V val)
         {
             if (val is T tVal)
-            {
-                if (index < _startingCells.Length)
-                    _startingCells[index] = tVal;
-                else
-                    _newCells[index] = tVal;
-            }
+                SetCellT(rowIndex, tVal);
             else if (val == null && Misc.IsNullable(val))
-            {
-                if (index < _startingCells.Length)
-                    _startingCells[index] = default(T);
-                else
-                    _newCells[index] = default(T);
-            }
+                SetCellT(rowIndex, default(T));
             else
                 throw new GenericTypeException();
         }
+
+        public void SetCellT(int rowIndex, T val)
+        {
+            if (rowIndex < _startingCells.Length)
+                _startingCells[rowIndex] = val;
+            else
+                _newCells[rowIndex] = val;
+        }
+        #endregion
+
 
 
         #region temp val
@@ -211,7 +197,7 @@ namespace InMemoryDb
         /// In that case, Rows should contain a set of removed elements so that it knows what rows not to write back into
         /// storaage when closing down the db and what rows to not allow retrieval of.
         ///
-        /// todo Because of the last part of what I said above, Col should not get a column it can access, rather it should
+        /// todo In future: Because of the last part of what I said above, Col should not get a column it can access, rather it should
         /// get a wrapper of some sort that allows it to only access the column it should be allowed to,
         /// and becuase there could be missing indexes the user should get an iterator to go through the rows of the result they
         /// are returned rather than passing in indexes. Each call to the iteratoer should return a
@@ -234,15 +220,15 @@ namespace InMemoryDb
         ///      }
         /// }
         /// 
-        /// todo When a user inserts a row, check the set of removed rows to see if there is a gap of a
+        /// todo In Future: When a user inserts a row, check the set of removed rows to see if there is a gap of a
         /// row that can be filled up.
         /// </summary>
-        public void Remove(int index)
+        public void Remove(int rowIndex)
         {
-            if (index < _startingCells.Length)
-                _startingCells[index] = default(T);
+            if (rowIndex < _startingCells.Length)
+                _startingCells[rowIndex] = default(T);
             else
-                _newCells.RemoveAt(index);
+                _newCells[rowIndex] = default(T);
         }
 
 
@@ -252,16 +238,16 @@ namespace InMemoryDb
         }
         
 
-        public void Swap(int index1, int index2)
+        public void Swap(int rowIndex1, int rowIndex2)
         {
             int size = GetSize();
-            if (index1 > size || index2 > size)
+            if (rowIndex1 > size || rowIndex1 > size)
                 throw new ArgumentException();
 
-            T cell1 = GetCell<T>(index1);
-            T cell2 = GetCell<T>(index2);
-            SetCell(index1, cell2);
-            SetCell(index2, cell1);
+            T cell1 = GetCell<T>(rowIndex1);
+            T cell2 = GetCell<T>(rowIndex1);
+            SetCell(rowIndex1, cell2);
+            SetCell(rowIndex1, cell1);
         }
 
 
