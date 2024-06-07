@@ -16,15 +16,16 @@ namespace InMemoryDb
         private List<T> _newCells;
         private T _tempVal;
 
-
         private bool _isFk;
         private string _referencedTableName;
         private string _referencedPkName;
-        //todo When you add Non-null constraints on columns, switch these indexes collections to not necessarily be nullables.
+        //todo When you add Non-null constraints on columns, change these indexes collections to not necessarily be nullables.
         private int?[] _startingCellsIndexes;
         private List<int?> _newCellsIndexes;
 
-
+        /// <summary>
+        /// Use other constructor if this column's values are foreign keys.
+        /// </summary>
         public Column(int startingSize = 0)
         {
             _startingCells = new T[startingSize];
@@ -32,7 +33,7 @@ namespace InMemoryDb
         }
 
         /// <summary>
-        /// If column is a fk column.
+        /// Use if this column is a fk column.
         /// </summary>
         public Column(string referencedTableName, string referencedPkName, int startingSize = 0) : this(startingSize)
         {
@@ -44,7 +45,7 @@ namespace InMemoryDb
         }
 
 
-
+        #region fk methhods
         public bool IsFk()
         {
             return _isFk;
@@ -100,7 +101,7 @@ namespace InMemoryDb
                 return _startingCellsIndexes[fkIndex];
             return _newCellsIndexes.ElementAt(fkIndex);
         }
-
+        #endregion
 
         public int GetIndexOfNth<U>(U val, int n)
         {
@@ -132,7 +133,7 @@ namespace InMemoryDb
                 _newCells.Add(tVal);
             }
             //todo IsNullable doesn't work if the type is a sring, because doing Table.Create<string?> will just creataa type of string, and so the null not being of any type will fail the if statement, and will fail the Misc.IsNullable, so this typeof chekcig is eneded. todo add it o all other palces in this file.
-            else if (val == null && (Misc.IsNullable(val) || typeof(V) == typeof(string)))
+            else if (val == null && Misc.IsNullable(val))
                 //Because I can't add null directly, I use the default, which in the case of a Nullable it's null.
                 _newCells.Add(default(T));
             else
@@ -151,7 +152,7 @@ namespace InMemoryDb
                 t = _newCells.ElementAt(index);
             if (t is V v)
                 return v;
-            else if (t == null && (Misc.IsNullable(t) || typeof(V) == typeof(string)))
+            else if (t == null && Misc.IsNullable(t))
                 return default(V);
             throw new Exception("Generic type of method was different from the column's type.");
         }
@@ -185,7 +186,7 @@ namespace InMemoryDb
                 else
                     _newCells[index] = tVal;
             }
-            else if (val == null && (Misc.IsNullable(val) || typeof(V) == typeof(string)))
+            else if (val == null && Misc.IsNullable(val))
             {
                 if (index < _startingCells.Length)
                     _startingCells[index] = default(T);
@@ -207,7 +208,7 @@ namespace InMemoryDb
         {
             if (_tempVal is V v)
                 return v;
-            else if (_tempVal == null && (Misc.IsNullable(_tempVal) || typeof(V) == typeof(string)))
+            else if (_tempVal == null && Misc.IsNullable(_tempVal))
                 return default(V);
             throw new Exception("Generic is wrong type.");
         }
@@ -222,17 +223,20 @@ namespace InMemoryDb
         /// This is not the only mechanism to be used when the user wants to delete a row.
         /// In that case, Rows should contain a set of removed elements so that it knows what rows not to write back into
         /// storaage when closing down the db and what rows to not allow retrieval of.
-        /// todo because of the last part of what i said above, Col should not get a column it can caccess, rather it should
-        /// get a wpper of ome sort that allows itto only access the column it should be allowed to,
-        /// and becuase there could be missing indexes the uer should get an iterator to go through the rows f the result they
-        /// are returned rathe than passing in indexes. each call to the iteratoer should return a
-        /// rows wraper that has the index of which row to use (reuse teh obejct and jsut an UnmodifiableVal), and the enumerator shoud
-        /// be like
-        /// public IEnumerable<ARowsWrapper> Enumerator()
+        ///
+        /// todo Because of the last part of what I said above, Col should not get a column it can access, rather it should
+        /// get a wrapper of some sort that allows it to only access the column it should be allowed to,
+        /// and becuase there could be missing indexes the user should get an iterator to go through the rows of the result they
+        /// are returned rather than passing in indexes. Each call to the iteratoer should return a
+        /// rows wraper that has the index of which row to use (reuse the obejct and just use an UnmodifiableVal (ie a
+        /// class holiding an object that was pased in. this passed in object should be mmodifiable, and should be held onto so that
+        /// the unmodifiableval can e given to someone who someone who it should be unmodifable for, but in reality you will be able to modify)),
+        /// and the enumerator shoud be like
+        /// 
+        /// public IEnumerable<ATypeOfRowsWrapper> Enumerator()
         /// {
         ///     while(index < size)
         ///     {
-        ///     
         ///         if(removedRows.Contains(index))
         ///             index++;
         ///         else
@@ -240,9 +244,11 @@ namespace InMemoryDb
         ///             modifiableVal.Val = index;
         ///             yeild return aRowsWrapper;
         ///         }
+        ///      }
         /// }
         /// 
-        /// note, when a user inserts a row, check the set of removed rows to see if there is a gap of a row that can be filled up.
+        /// todo When a user inserts a row, check the set of removed rows to see if there is a gap of a
+        /// row that can be filled up.
         /// </summary>
         public void Remove(int index)
         {
