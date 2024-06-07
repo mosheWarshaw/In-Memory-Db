@@ -33,10 +33,10 @@ SQL commands are corresponded to function calls that can be chained upon each ot
 
 Current commands
 ----------------
-Select
-Where
-OrderBy
-JoinOnKeys
+Select <br>
+Where <br>
+OrderBy <br>
+JoinOnKeys <br>
 
   Regarding JoinOnKeys
   -------------------
