@@ -26,8 +26,6 @@
             _ScreenExistingTableNames(fkTableName, pkTableName);
             if (nameOfResultTable != null)
                 _ScreenNewTableNames(nameOfResultTable);
-            if (joinType != JoinType.INNER)
-                _ScreenColsAreNullable(joinType, fkCols, pkCols);
             _SetUpFunc(ref where);
 
             SameRowAccessor sameRowAccessor = new SameRowAccessor(_currResultRows);

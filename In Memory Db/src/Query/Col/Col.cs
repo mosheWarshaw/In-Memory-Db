@@ -16,12 +16,13 @@
         private Func<S, SameRowAccessor, R> _sourceFunc { get; }
         private Func<SameRowAccessor, R> _sourcelessFunc { get; }
 
-        private Col(string sourceColName, string resultColumnName, Func<S, SameRowAccessor, R> sourceFunc, Func<SameRowAccessor, R> sourcelessFunc)
+        private Col(string sourceColName, string resultColumnName, Func<S, SameRowAccessor, R> sourceFunc, Func<SameRowAccessor, R> sourcelessFunc, bool isNullable)
         {
             SourceColumnName = sourceColName;
             ResultColumnName = resultColumnName ?? sourceColName;
             _sourceFunc = sourceFunc;
             _sourcelessFunc = sourcelessFunc;
+            column.IsNullable(isNullable);
         }
 
         /// <summary>
@@ -34,6 +35,7 @@
             private string _resultColumnName;
             private Func<S, SameRowAccessor, R> _sourceFunc;
             private Func<SameRowAccessor, R> _sourcelessFunc;
+            private bool _resultIsNullable;
 
             #region setters
             public Builder SourceColumnName(string name)
@@ -67,12 +69,18 @@
                 _sourcelessFunc = func;
                 return this;
             }
+
+            public Builder ResultIsNullable()
+            {
+                _resultIsNullable = true;
+                return this;
+            }
             #endregion
 
             public Col<S, R> Build()
             {
                 if (VerifyFoundation())
-                    return new Col<S, R>(_sourceColumnName, _resultColumnName, _sourceFunc, _sourcelessFunc);
+                    return new Col<S, R>(_sourceColumnName, _resultColumnName, _sourceFunc, _sourcelessFunc, _resultIsNullable);
                 throw new ImproperFoundationException();
             }
 

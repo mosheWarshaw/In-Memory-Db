@@ -1,7 +1,18 @@
 ﻿//todo In future: Use the observer design pattern for updating foriegn keys when a pk is changed.
 
 /*Explanation of GetCell<V>, but note that the pattern is used
- * in other functions.
+ * in other functions, so it is explained up here.
+
+public V GetCell<V>(int rowIndex)
+{
+    T t = GetCellT(rowIndex);
+    if (t is V v)
+        return v;
+    else if (t == null && isNullable)
+        return default(V);
+    throw new GenericTypeException();
+}
+
  * The if part is needed because even though the user knows and
  * is right that V is the same as T, the compiler won't allow teh assingnment
  * of a value of V to a collection of T. So, t is stored in v, and
@@ -9,27 +20,44 @@
  * minimized by Column using GetCellT when it can.
  * The else if is necessary for cases where T is a nullable type, so
  * null could be the value of t, but because you can't return null to an
- * unconstrained generic, defaul(T) is used, which in the case of generics
- * is null. If this else-if fails, it is because the user called the method with the
- * wrong generic in the signature.
+ * unconstrained generic, default(T) is used, which in the case of generics
+ * is null. Note, isNullable is used rather than doing the msdn way of checking if a generic
+ * is nullable, because that will not work for string? because hvaing a generic of
+ * string? will actually just be made into string, and string is not nullable, so a user won't be able
+ * to get or set a null value from their column that they set to be able to store null values.
  * 
-public V GetCell<V>(int rowIndex)
+
+void Main()
 {
-    T t = GetCellT(rowIndex);
-    if (t is V v)
-        return v;
-    else if (t == null && Misc.IsNullable(t))
-        return default(V);
-    throw new GenericTypeException();
+	C<string?> c = new C<string?>();
+	c.Meth();
 }
- */
+public class C<T>
+{
+	public void Meth()
+	{
+		Console.WriteLine(typeof(T)); //Prints System.String
+
+        //Below line is from: https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/nullable-types/how-to-identify-a-nullable-type
+        bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
+
+		Console.WriteLine(IsNullable(typeof(T))); //Prints False
+	}
+}
+
+ * 
+ * 
+ * If this else-if fails, it is because the user called the method with the
+ * wrong generic in the signature.*/
+
 namespace InMemoryDb
 {
     public class Column<T> : IColumn
     {
-        private T[] _startingCells;
-        private List<T> _newCells;
+        private readonly T[] _startingCells;
+        private readonly List<T> _newCells;
         private T _tempVal;
+        private bool _isNullable;
 
         private bool _isFk;
         private string _referencedTableName;
@@ -41,16 +69,17 @@ namespace InMemoryDb
         /// <summary>
         /// Use other constructor if this column's values are foreign keys.
         /// </summary>
-        public Column(int startingSize = 0)
+        public Column(int startingSize = 0, bool isNullable = false)
         {
             _startingCells = new T[startingSize];
             _newCells = new List<T>();
+            _isNullable = isNullable;
         }
 
         /// <summary>
         /// Use if this column is a fk column.
         /// </summary>
-        public Column(string referencedTableName, string referencedPkName, int startingSize = 0) : this(startingSize)
+        public Column(string referencedTableName, string referencedPkName, int startingSize = 0, bool isNullable = false) : this(startingSize, isNullable)
         {
             _isFk = true;
             _referencedTableName = referencedTableName;
@@ -134,7 +163,7 @@ namespace InMemoryDb
         {
             if (val is T tVal)
                 _newCells.Add(tVal);
-            else if (val == null && Misc.IsNullable(val))
+            else if (val == null && _isNullable)
                 _newCells.Add(default(T));
             else
                 throw new GenericTypeException();
@@ -149,7 +178,7 @@ namespace InMemoryDb
             T t = GetCellT(rowIndex);
             if (t is V v)
                 return v;
-            else if (t == null && Misc.IsNullable(t))
+            else if (t == null && _isNullable)
                 return default(V);
             throw new GenericTypeException();
         }
@@ -177,7 +206,7 @@ namespace InMemoryDb
         {
             if (val is T tVal)
                 SetCellT(rowIndex, tVal);
-            else if (val == null && Misc.IsNullable(val))
+            else if (val == null && _isNullable)
                 SetCellT(rowIndex, default(T));
             else
                 throw new GenericTypeException();
@@ -204,7 +233,7 @@ namespace InMemoryDb
         {
             if (_tempVal is V v)
                 return v;
-            else if (_tempVal == null && Misc.IsNullable(_tempVal))
+            else if (_tempVal == null && _isNullable)
                 return default(V);
             throw new GenericTypeException();
         }
@@ -256,6 +285,10 @@ namespace InMemoryDb
                 _newCells[rowIndex] = default(T);
         }
 
+        public void IsNullable(bool isNullable)
+        {
+            _isNullable = isNullable;
+        }
 
         public int GetSize()
         {

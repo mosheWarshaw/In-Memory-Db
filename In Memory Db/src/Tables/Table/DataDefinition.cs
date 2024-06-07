@@ -17,19 +17,19 @@ namespace InMemoryDb
         }
 
 
-        public void Create<T>(string columnName, int startingSize = 0)
+        public void Create<T>(string columnName, int startingSize = 0, bool isNullable = false)
         {
             if (_rows.Contains(columnName))
             {
                 throw new ArgumentException();
             }
 
-            _rows.columns[columnName] = new Column<T>(startingSize);
+            _rows.columns[columnName] = new Column<T>(startingSize, isNullable);
         }
 
-        public void CreateFkColumn<T>(string columnName, string referencedTableName, string referencedColumnName, int startingSize = 0)
+        public void CreateFkColumn<T>(string columnName, string referencedTableName, string referencedColumnName, int startingSize = 0, bool isNullable = false)
         {
-            _rows.columns[columnName] = new Column<T>(referencedTableName, referencedColumnName, startingSize);
+            _rows.columns[columnName] = new Column<T>(referencedTableName, referencedColumnName, startingSize, isNullable);
         }
 
         public void Add(string columnName, IColumn column)
