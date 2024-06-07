@@ -3,7 +3,7 @@ A C# library of an in memory database, with the tables being stored and retrieve
 
 This project was done with Avromi Schneierson ([github](https://github.com/avrohom-schneierson), [linkedin](https://www.linkedin.com/in/avrohomschneierson)), with whom the planning and designing of the entire project was done together, and we then took separate parts (him: DataSource (ie the storing and retrieving of the database). me: the structure of the tables when in memory, and the query commands), and we linked them with an Adapter.
 
-Regarding overall design:
+Regarding overall design
 ------------------------
 Arrays contain metadata, so the fewer arrays in db table then the less space db table will take up.
 Having the db be a 2d array where each inner array is db row in the table will have db lot of arrays, so this isn't good.
@@ -11,7 +11,7 @@ A single array for the whole table (and if the table has 7 columns in the table,
 So instead, there is db single array per column. The table is map of column names to the column. To get the second row from the table you would take the second elem from each array.
 
 
-Regarding design of specific implementation:
+Regarding design of specific implementation
 -------------------------------------------
 Funcs is what the querier uses. It utilizes the functionality provided by Table. Table holds Rows, each Rows being a collection of Column.
 Funcs takes a Col for each column that should be created in the returned results.
