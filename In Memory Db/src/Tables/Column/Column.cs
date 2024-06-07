@@ -103,21 +103,6 @@ namespace InMemoryDb
         }
         #endregion
 
-        public int GetIndexOfNth<U>(U val, int n)
-        {
-            int counter = 0;
-            for (int i = 0; i < GetSize(); i++)
-            {
-                if (val.Equals(GetCell<T>(i)))
-                {
-                    counter++;
-                    if (counter == n)
-                        return i;
-                }
-            }
-            return -1;
-        }
-
 
 
         #region add cell
@@ -137,7 +122,7 @@ namespace InMemoryDb
                 //Because I can't add null directly, I use the default, which in the case of a Nullable it's null.
                 _newCells.Add(default(T));
             else
-                throw new Exception("Generic type of method is different from the column's type.");
+                throw new GenericTypeException();
         }
         #endregion
 
@@ -154,7 +139,7 @@ namespace InMemoryDb
                 return v;
             else if (t == null && Misc.IsNullable(t))
                 return default(V);
-            throw new Exception("Generic type of method was different from the column's type.");
+            throw new GenericTypeException();
         }
 
         //todo use this one within Column.
@@ -194,7 +179,7 @@ namespace InMemoryDb
                     _newCells[index] = default(T);
             }
             else
-                throw new Exception("Generic type of method was different from the column's type.");
+                throw new GenericTypeException();
         }
 
 
@@ -210,7 +195,7 @@ namespace InMemoryDb
                 return v;
             else if (_tempVal == null && Misc.IsNullable(_tempVal))
                 return default(V);
-            throw new Exception("Generic is wrong type.");
+            throw new GenericTypeException();
         }
 
         public void AddTempVal()
@@ -218,6 +203,8 @@ namespace InMemoryDb
             _newCells.Add(_tempVal);
         }
         #endregion
+
+
 
         /// <summary>
         /// This is not the only mechanism to be used when the user wants to delete a row.
@@ -263,9 +250,7 @@ namespace InMemoryDb
         {
             return _startingCells.Length + _newCells.Count;
         }
-
-
-
+        
 
         public void Swap(int index1, int index2)
         {
@@ -283,6 +268,22 @@ namespace InMemoryDb
         public IColumnWrapper GetColumnWrapper()
         {
             return new ColumnWrapper<T>(this);
+        }
+
+
+        public int GetIndexOfNth<U>(U val, int n)
+        {
+            int counter = 0;
+            for (int i = 0; i < GetSize(); i++)
+            {
+                if (val.Equals(GetCell<T>(i)))
+                {
+                    counter++;
+                    if (counter == n)
+                        return i;
+                }
+            }
+            return -1;
         }
 
 
