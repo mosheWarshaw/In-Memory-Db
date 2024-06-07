@@ -5,11 +5,11 @@
         public Dictionary<string, IColumn> columns = new Dictionary<string, IColumn>();
 
 
-
         public T GetCell<T>(int rowIndex, string columnName)
         {
             return columns[columnName].GetCell<T>(rowIndex);
         }
+
 
         public void GetCell(int rowIndex, string columnName, out dynamic val)
         {
@@ -17,11 +17,11 @@
         }
 
 
-
         public bool Contains(string columnName)
         {
             return columns.ContainsKey(columnName);
         }
+
 
         public override bool Equals(object obj)
         {
@@ -62,9 +62,6 @@
             }
             return true;
         }
-
-
-
 
         public override int GetHashCode()
         {

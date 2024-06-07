@@ -14,11 +14,10 @@ namespace InMemoryDb
         T GetTempVal<T>();
         void AddTempVal();
 
-
         int? GetPkIndex(int indexOfFk);
+        void SetIndexes(Database db);
 
         int GetIndexOfNth<T>(T val, int n);
-        void SetIndexes(Database db);
         int GetSize();
         IColumnWrapper GetColumnWrapper();
         void Swap(int index1, int index2);
