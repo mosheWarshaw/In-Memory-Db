@@ -37,6 +37,5 @@ Select <br>
 Where <br>
 OrderBy <br>
 JoinOnKeys <br>
-
-  <b>Regarding JoinOnKeys</b>
+&nsbp;<b>Regarding JoinOnKeys</b>
 
