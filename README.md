@@ -54,3 +54,6 @@ Because ```Rows``` and ```Table``` and ```Funcs``` all have to work on different
 ```Table```, being primarily a provider of functionality, and its only data being ```Rows```, has 2 constructors. One that creates its own ```Rows```, and one that takes one as a parameter and doesn't do defensive copying. The reason for the second is that sometimes the functionality of ```Table``` is wanted, but not without losing the direct access to ```Rows```. But in cases where you wouldn't want ```Rows``` to be directly accessed from ```Table```, ```Rows``` is kept safe by being a private field.
 <br>
 This also provides an advantage for testing, when you can check directly if ```Table```'s functionality had the proper affect on ```Rows```.
+<br>
+<br>
+The querier uses ```Col```s to query with ```Funcs```, and ```Funcs``` uses ```Table```, and ```Table``` uses ```Rows```, and ```Rows``` uses ```Column```, and under the hood ```Col``` uses ```Column``` too. So dealing with the datatype and preventing boxing is all at the lowest level as encapsulated in the ```Column``` class
