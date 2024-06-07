@@ -38,15 +38,12 @@ Regarding design of specific implementation
 The ```Funcs``` class is what the querier uses. It contains all the SQL commands as funtions. It utilizes the functionality provided by ```Table```. ```Table``` holds ```Rows```, each ```Rows``` being a collection of ```Column```s.<br>
 ```Funcs``` takes a ```Col``` for each column that should be created in the returned results.
 <br>
-<br>
-
 Interfaces such as ```ICol``` and ```IColumn``` are used because a map of column-name to column can't be
 ```Dictionary<string, Column<?>>```
 it has to be
 ```Dictionary<string, IColumn>```
 with no type being specified.
 Because ```Rows``` and ```Table``` and ```Funcs``` all have to work on different columns, and don't want to interact with it by setting or getting cells with an ```if-else``` statement trying to identify the column type, or with it using boxing (dynamic uses boxing), because of the time it would take to create new objects to wrap the primitives. So as much work that involves the specific type of the cell is on the level of the ```Column``` with the classes using it just telling it what to do. Eg: ```Col``` creates its own ```Columnn``` rather than ```Funcs``` creating it. ```Column``` does its own ```Swap()```ping rather than ```Table``` getting each cell and telling ```Column``` what to set each value (both of these were old ways of handling it).
-<br>
 <br>
 ```Column``` holds the cells as their primitive selves (excpet strings) without boxing (and wasting space) (in C#, generics can be primitives), and abstracts from all the other code what data type it is and the management of it in order for oeprations to not be wasteful with booxing.
 <br>
