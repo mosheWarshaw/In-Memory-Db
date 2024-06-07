@@ -13,7 +13,7 @@ So instead, there is db single array per column. The table is map of column name
 
 Regarding design of specific implementation
 -------------------------------------------
-Funcs is what the querier uses. It utilizes the functionality provided by Table. Table holds Rows, each Rows being a collection of Column.
+```Funcs``` is what the querier uses. It utilizes the functionality provided by Table. Table holds Rows, each Rows being a collection of Column.
 Funcs takes a Col for each column that should be created in the returned results.
 
 Interfaces such as ICol and IColumn are used because a map of column name to column can't be
