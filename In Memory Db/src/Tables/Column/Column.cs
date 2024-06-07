@@ -1,17 +1,28 @@
 ﻿//todo In future: Use the observer design pattern for updating foriegn keys when a pk is changed.
 
-
-
-//todo Refactor file, and explain that you use default(T) when you want to use null, but can't because the compiler won't allow it even though you know T is nullable. Also explain that if(null is int?) returns false.
-/*The reason for the if statements in each method that check if it is of a type and then transfers it
- * into a different variable is because i can't do
- * Dictionary<string, Column<?>> columns = new();
-                //Because I can't add null directly, I use the default, which in the case of a Nullable it's null.
- */            // IsNullable doesn't work if the type is a sring, because doing Table.Create<string?> will just creataa type of string, and so the null not being of any type will fail the if statement, and will fail the Misc.IsNullable, so this typeof chekcig is eneded. todo add it o all other palces in this file.
-
-
-
-
+/*Explanation of GetCell<V>, but note that the pattern is used
+ * in other functions.
+ * The if part is needed because even though the user knows and
+ * is right that V is the same as T, the compiler won't allow teh assingnment
+ * of a value of V to a collection of T. So, t is stored in v, and
+ * this is a redundant primitve, but this waste is accepted where it needs to be, and is
+ * minimized by Column using GetCellT when it can.
+ * The else if is necessary for cases where T is a nullable type, so
+ * null could be the value of t, but because you can't return null to an
+ * unconstrained generic, defaul(T) is used, which in the case of generics
+ * is null. If this else-if fails, it is because the user called the method with the
+ * wrong generic in the signature.
+ * 
+public V GetCell<V>(int rowIndex)
+{
+    T t = GetCellT(rowIndex);
+    if (t is V v)
+        return v;
+    else if (t == null && Misc.IsNullable(t))
+        return default(V);
+    throw new GenericTypeException();
+}
+ */
 namespace InMemoryDb
 {
     public class Column<T> : IColumn
