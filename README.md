@@ -27,7 +27,17 @@ Rows is a class that is primarily a holder a data, not a provider of functionali
 Table, being primarily a provider of functionality, and its only data being Rows, has 2 constructors. One that creates its own Rows, and one that takes one as a parameter and doesn't do defensive copying. The reason for the second is that sometimes the functionality of Table is wanted, but not without losing the direct access to Rows. But in cases where you wouldn't want Rows to be directly accessed from Table, Rows is a private field.
 This also provides an advantage for testing, when you can check directly if Table's functionality had the proper affect on Rows.
 
-TODO
-----
--I so far only have the Select, Where, and OrderBy commands, but the rest have been planned out and were anticipated in the designing of the structure for the existing ones. <br>
--I will be adding comparisons of the use of this library compared to sql syntax, shortly, upon adding some more query commands.
+Regarding usage
+---------------
+SQL commands are corresponded to function calls that can be chained upon each other, and in each function you pass in an object containing and managing the creation of a returned column (in the case of data-retrieval queries) in which you have the options as you normally would in a SQL query (ie (speaking of the Select because it is the one with the most features:) naming the column of the table that the values should be taken from, setting the name of the returned column to be different from the original, having a lambda alter the data of the column based off other values in the row or in any way you wish as is presented with the functionality accompanying a c# method, having the column not be based off any value of the table, and being able to assign a name to the results of the query so it can be referenced later in the chain).
+
+Current commands
+----------------
+Select
+Where
+OrderBy
+JoinOnKeys
+
+  Regarding JoinOnKeys
+  -------------------
+
